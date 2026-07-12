@@ -1,4 +1,18 @@
+import { defaultInstallation } from "../services/defaultInstallation";
+import { calculateGas } from "../services/GasCalculationService";
 export default function Dashboard() {
+  const currentWeight = 22.0;
+
+const gas = calculateGas({
+    cylinderCapacityKg: defaultInstallation.cylinderCapacityKg,
+
+    emptyCylinderWeightKg:
+        defaultInstallation.emptyCylinderWeightKg,
+
+    currentGrossWeightKg: currentWeight,
+
+    averageConsumptionKgPerHour: 0.55,
+});
   return (
     <div
       style={{
@@ -26,7 +40,10 @@ export default function Dashboard() {
           marginBottom: "30px",
         }}
       >
-        Smart LPG Monitor
+        Installed:
+{
+    defaultInstallation.installDate.toLocaleDateString()
+}
       </p>
 
       <hr />
@@ -41,26 +58,37 @@ export default function Dashboard() {
         Remaining LPG
       </h2>
 
+     <div style={{ textAlign: "center" }}>
       <h1
         style={{
-          fontSize: "64px",
-          textAlign: "center",
-          margin: "10px",
-          color: "#4CAF50",
-        }}
+         fontSize: "64px",
+         color: "#4CAF50",
+         marginBottom: "0px",
+       }}
       >
-        72%
+       {gas.remainingPercent.toFixed(0)}%
       </h1>
 
-      <p
+    <div
         style={{
-          textAlign: "center",
-          fontSize: "24px",
-          color: "white",
-        }}
-      >
-        8.64 kg
-      </p>
+         color: "white",
+         fontSize: "26px",
+         marginTop: "15px",
+       }}
+     >
+       {gas.remainingLpgKg.toFixed(2)} kg
+     </div>
+
+  <div
+    style={{
+      color: "#AAAAAA",
+      fontSize: "16px",
+      marginTop: "8px",
+    }}
+  >
+    of {defaultInstallation.cylinderCapacityKg} kg
+  </div>
+</div>
 
       <hr />
 
@@ -74,12 +102,12 @@ export default function Dashboard() {
         <tbody>
           <tr>
             <td>Remaining BBQ Sessions</td>
-            <td align="right">6</td>
+            <td align="right">{gas.remainingSessions.toFixed(1)}</td>
           </tr>
 
           <tr>
             <td>Cooking Hours</td>
-            <td align="right">13.2</td>
+            <td align="right">{gas.remainingHours.toFixed(1)}</td>
           </tr>
 
           <tr>
@@ -91,7 +119,7 @@ export default function Dashboard() {
                 fontWeight: "bold",
               }}
             >
-              GOOD
+              {gas.status}
             </td>
           </tr>
         </tbody>
