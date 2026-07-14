@@ -52,3 +52,9 @@ Sprint 1.5
 ## Next Session Goal
 
 Implement the Equipment Setup page.
+
+## Git History
+
+| Date | Commit | Description |
+|------|--------|-------------|
+| 2026-07-14 | feat: add equipment domain model and project status tracking | Added Equipment model, default equipment and PROJECT_STATUS.md |

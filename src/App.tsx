@@ -1,20 +1,5 @@
-import Dashboard from "./pages/Dashboard";
+import EquipmentPage from "./pages/EquipmentPage";
 
-function App() {
-  return (
-    <div
-      style={{
-        background: "#121212",
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <Dashboard />
-    </div>
-  );
+export default function App() {
+  return <EquipmentPage />;
 }
-
-export default App;
