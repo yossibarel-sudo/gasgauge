@@ -1,3 +1,5 @@
+# GasGauge follows a "measure first, estimate second" philosophy. Whenever measured data is available, it takes precedence over theoretical calculations. Manufacturer specifications provide the initial estimate, while real measurements continuously improve prediction accuracy over time.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
