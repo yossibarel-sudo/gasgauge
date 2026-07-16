@@ -1,9 +1,25 @@
 # GasGauge Project Status
 
 Last Updated:
-2026-07-14
+2026-07-16
 
 ---
+### 2026-07-16
+### Completed
+
+- React Router navigation
+- Equipment editor
+- Equipment persistence using localStorage
+
+### Current Status
+
+GasGauge now retains the equipment configuration across browser refreshes.
+
+### Next
+
+- Snackbar for save confirmation
+- Installation persistence
+- New Cylinder dialog
 
 ## Current Sprint
 

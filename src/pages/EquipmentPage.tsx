@@ -1,19 +1,50 @@
+import { useState } from "react";
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
+  MenuItem,
+  TextField,
   Typography,
 } from "@mui/material";
 
-import { defaultEquipment } from "../services/defaultEquipment";
-import type { Burner } from "../models/Equipment";
+import { EquipmentService } from "../services/EquipmentService";
+import type { Burner, BurnerUnit, Equipment } from "../models/Equipment";
 
 export default function EquipmentPage() {
-  const equipment = defaultEquipment;
+  const [equipment, setEquipment] = useState<Equipment>(
+  () => EquipmentService.load()
+);
+
+  const updateEquipment = (
+    field: keyof Equipment,
+    value: string | number
+  ) => {
+    setEquipment((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const updateBurner = (
+    index: number,
+    field: keyof Burner,
+    value: string | number
+  ) => {
+    const burners = [...equipment.burners];
+
+    burners[index] = {
+      ...burners[index],
+      [field]: value,
+    };
+
+    setEquipment({
+      ...equipment,
+      burners,
+    });
+  };
 
   return (
     <Box sx={{ maxWidth: 900, mx: "auto", mt: 4 }}>
@@ -23,43 +54,39 @@ export default function EquipmentPage() {
 
       <Card>
         <CardContent>
-          <Typography variant="h6">
-            {equipment.manufacturer}
-          </Typography>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Manufacturer"
+            value={equipment.manufacturer}
+            onChange={(e) =>
+              updateEquipment("manufacturer", e.target.value)
+            }
+          />
 
-          <Typography color="text.secondary">
-            {equipment.model}
-          </Typography>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Model"
+            value={equipment.model}
+            onChange={(e) =>
+              updateEquipment("model", e.target.value)
+            }
+          />
 
-          <Divider sx={{ my: 2 }} />
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              mb: 3,
-            }}
-          >
-            <Box>
-              <Typography variant="subtitle2">
-                Default BBQ Session
-              </Typography>
-
-              <Typography>
-                {equipment.defaultSessionDurationMinutes} minutes
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="subtitle2">
-                Number of Burners
-              </Typography>
-
-              <Typography>
-                {equipment.burners.length}
-              </Typography>
-            </Box>
-          </Box>
+          <TextField
+            fullWidth
+            margin="normal"
+            type="number"
+            label="Default Session Duration (minutes)"
+            value={equipment.defaultSessionDurationMinutes}
+            onChange={(e) =>
+              updateEquipment(
+                "defaultSessionDurationMinutes",
+                Number(e.target.value)
+              )
+            }
+          />
 
           <Divider sx={{ my: 3 }} />
 
@@ -67,18 +94,69 @@ export default function EquipmentPage() {
             Burners
           </Typography>
 
-          <List>
-            {equipment.burners.map((burner: Burner) => (
-              <ListItem key={burner.id} divider>
-                <ListItemText
-                  primary={burner.name}
-                  secondary={`${burner.value} ${burner.unit} (${burner.calculatedKgPerHour.toFixed(
-                    3
-                  )} kg/h)`}
+          {equipment.burners.map((burner, index) => (
+            <Card
+              key={burner.id}
+              variant="outlined"
+              sx={{ mb: 2, p: 2 }}
+            >
+              <Typography variant="subtitle1" gutterBottom>
+                Burner {burner.id}
+              </Typography>
+
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Name"
+                value={burner.name}
+                onChange={(e) =>
+                  updateBurner(index, "name", e.target.value)
+                }
+              />
+
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <TextField
+                  type="number"
+                  label="Value"
+                  value={burner.value}
+                  onChange={(e) =>
+                    updateBurner(index, "value", Number(e.target.value))
+                  }
                 />
-              </ListItem>
-            ))}
-          </List>
+
+                <TextField
+                  select
+                  label="Unit"
+                  value={burner.unit}
+                  onChange={(e) =>
+                    updateBurner(
+                      index,
+                      "unit",
+                      e.target.value as BurnerUnit
+                    )
+                  }
+                >
+                  {["W", "kW", "BTU/h", "kg/h", "g/h"].map((unit) => (
+                    <MenuItem key={unit} value={unit}>
+                      {unit}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Box>
+            </Card>
+          ))}
+
+          <Button
+  variant="contained"
+  size="large"
+  sx={{ mt: 2 }}
+  onClick={() => {
+    EquipmentService.save(equipment);
+    alert("Equipment saved successfully.");
+  }}
+>
+  Save
+</Button>
         </CardContent>
       </Card>
     </Box>

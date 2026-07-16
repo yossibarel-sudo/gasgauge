@@ -5,14 +5,13 @@ const STORAGE_KEY = "gasgauge-equipment";
 
 export class EquipmentService {
   static load(): Equipment {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const json = localStorage.getItem(STORAGE_KEY);
 
-    if (!data) {
-      this.save(defaultEquipment);
+    if (!json) {
       return defaultEquipment;
     }
 
-    return JSON.parse(data) as Equipment;
+    return JSON.parse(json) as Equipment;
   }
 
   static save(equipment: Equipment): void {
