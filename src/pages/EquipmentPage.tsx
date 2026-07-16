@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   Divider,
-  Grid,
   List,
   ListItem,
   ListItemText,
@@ -11,6 +10,7 @@ import {
 } from "@mui/material";
 
 import { defaultEquipment } from "../services/defaultEquipment";
+import type { Burner } from "../models/Equipment";
 
 export default function EquipmentPage() {
   const equipment = defaultEquipment;
@@ -33,8 +33,14 @@ export default function EquipmentPage() {
 
           <Divider sx={{ my: 2 }} />
 
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              mb: 3,
+            }}
+          >
+            <Box>
               <Typography variant="subtitle2">
                 Default BBQ Session
               </Typography>
@@ -42,9 +48,9 @@ export default function EquipmentPage() {
               <Typography>
                 {equipment.defaultSessionDurationMinutes} minutes
               </Typography>
-            </Grid>
+            </Box>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Box>
               <Typography variant="subtitle2">
                 Number of Burners
               </Typography>
@@ -52,8 +58,8 @@ export default function EquipmentPage() {
               <Typography>
                 {equipment.burners.length}
               </Typography>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           <Divider sx={{ my: 3 }} />
 
@@ -62,7 +68,7 @@ export default function EquipmentPage() {
           </Typography>
 
           <List>
-            {equipment.burners.map((burner) => (
+            {equipment.burners.map((burner: Burner) => (
               <ListItem key={burner.id} divider>
                 <ListItemText
                   primary={burner.name}
