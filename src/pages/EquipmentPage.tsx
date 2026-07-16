@@ -1,11 +1,13 @@
 import { useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   Divider,
   MenuItem,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
@@ -17,6 +19,7 @@ export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<Equipment>(
   () => EquipmentService.load()
 );
+  const [saved, setSaved] = useState(false);
 
   const updateEquipment = (
     field: keyof Equipment,
@@ -152,13 +155,27 @@ export default function EquipmentPage() {
   sx={{ mt: 2 }}
   onClick={() => {
     EquipmentService.save(equipment);
-    alert("Equipment saved successfully.");
+    setSaved(true);
   }}
 >
   Save
 </Button>
         </CardContent>
       </Card>
+    <Snackbar
+  open={saved}
+  autoHideDuration={3000}
+  onClose={() => setSaved(false)}
+  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+>
+  <Alert
+    severity="success"
+    variant="filled"
+    onClose={() => setSaved(false)}
+  >
+    Equipment saved successfully.
+  </Alert>
+</Snackbar>
     </Box>
   );
 }
