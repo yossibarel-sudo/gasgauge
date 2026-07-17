@@ -1,13 +1,22 @@
-import { defaultInstallation } from "../services/defaultInstallation";
+import { InstallationService } from "../services/InstallationService";
 import { calculateGas } from "../services/GasCalculationService";
-export default function Dashboard() {
-  const currentWeight = 22.0;
 
-const gas = calculateGas({
-    cylinderCapacityKg: defaultInstallation.cylinderCapacityKg,
+function formatDate(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
+
+export default function Dashboard() {
+  const installation = InstallationService.load();
+  const currentWeight = 22.0;
+  const gas = calculateGas({
+    cylinderCapacityKg: installation.cylinderCapacityKg,
 
     emptyCylinderWeightKg:
-        defaultInstallation.emptyCylinderWeightKg,
+        installation.emptyCylinderWeightKg,
 
     currentGrossWeightKg: currentWeight,
 
@@ -40,9 +49,9 @@ const gas = calculateGas({
           marginBottom: "30px",
         }}
       >
-        Installed:
+        Cylinder Installed:
 {
-    defaultInstallation.installDate.toLocaleDateString()
+    formatDate(installation.installDate)
 }
       </p>
 
@@ -86,7 +95,7 @@ const gas = calculateGas({
       marginTop: "8px",
     }}
   >
-    of {defaultInstallation.cylinderCapacityKg} kg
+    of {installation.cylinderCapacityKg} kg
   </div>
 </div>
 

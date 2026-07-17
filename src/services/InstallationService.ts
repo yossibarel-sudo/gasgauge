@@ -5,14 +5,18 @@ const STORAGE_KEY = "gasgauge-installation";
 
 export class InstallationService {
   static load(): Installation {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const json = localStorage.getItem(STORAGE_KEY);
 
-    if (!data) {
-      this.save(defaultInstallation);
+    if (!json) {
       return defaultInstallation;
     }
 
-    return JSON.parse(data) as Installation;
+    const installation = JSON.parse(json) as Installation;
+
+    return {
+      ...installation,
+      installDate: new Date(installation.installDate),
+    };
   }
 
   static save(installation: Installation): void {

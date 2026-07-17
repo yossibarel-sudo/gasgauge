@@ -1,76 +1,228 @@
-# GasGauge Project Status
+## Sprint Progress
 
-Last Updated:
-2026-07-16
+Sprint 1  ✅ Complete
+Sprint 2  🚧 65%
+Sprint 3  ⏳ Planned
 
 ---
-### 2026-07-16
-### Completed
+# GasGauge - Project Status
 
-- React Router navigation
-- Equipment editor
-- Equipment persistence using localStorage
-
-### Current Status
-
-GasGauge now retains the equipment configuration across browser refreshes.
-
-### Next
-
-- Snackbar for save confirmation
-- Installation persistence
-- New Cylinder dialog
-
-## Current Sprint
-
-Sprint 1.5
+**Last Updated:** July 2026
 
 ---
 
-## Completed
+# Project Overview
 
-- [x] React + Vite
-- [x] TypeScript
-- [x] Material UI
-- [x] Dashboard
-- [x] Gas Calculation Service
-- [x] Installation Model
-- [x] Default Installation
-- [x] Equipment Model
-- [x] Default Equipment
+GasGauge is a Progressive Web Application (PWA) for estimating the remaining LPG in a gas cylinder based on cylinder weight measurements and gas appliance specifications.
 
----
+The application is built using:
 
-## In Progress
-
-- [ ] Equipment Setup Page
+- React 19
+- TypeScript
+- Vite
+- Material UI
 
 ---
 
-## Next Tasks
+# Current Sprint
 
-1. Equipment Setup Page
-2. Local Storage
-3. Dashboard Integration
+## Sprint 2
 
----
+### Objective
 
-## Recent Changes
+Complete the core application workflow:
 
-### 2026-07-14
-
-- Added Equipment domain model.
-- Added default equipment profile.
-- Started maintaining PROJECT_STATUS.md.
+Equipment → Cylinder Installation → Dashboard → Measurements
 
 ---
 
-## Next Session Goal
+# Completed Features
 
-Implement the Equipment Setup page.
+## Project Foundation
 
-## Git History
+- ✅ React + Vite
+- ✅ TypeScript
+- ✅ Material UI
+- ✅ React Router navigation
+- ✅ GitHub repository
+- ✅ Project documentation
 
-| Date | Commit | Description |
-|------|--------|-------------|
-| 2026-07-14 | feat: add equipment domain model and project status tracking | Added Equipment model, default equipment and PROJECT_STATUS.md |
+---
+
+## Dashboard
+
+Completed
+
+- ✅ Remaining LPG (%)
+- ✅ Remaining LPG (kg)
+- ✅ Remaining cooking hours
+- ✅ Remaining BBQ sessions
+- ✅ Cylinder status
+- ✅ Installation date
+- ✅ Gas calculation engine integration
+
+---
+
+## Equipment
+
+Completed
+
+- ✅ Equipment domain model
+- ✅ Burner model
+- ✅ Default equipment
+- ✅ Equipment Setup page
+- ✅ Editable equipment form
+- ✅ Burner editing
+- ✅ Save button
+- ✅ Snackbar confirmation
+- ✅ Equipment persistence using localStorage
+
+---
+
+## Persistence
+
+Completed
+
+- ✅ EquipmentService
+- ✅ InstallationService
+- ✅ localStorage integration
+- ✅ Automatic loading of saved equipment
+- ✅ Automatic loading of saved installation
+- ✅ Proper Date restoration after JSON loading
+
+---
+
+# In Progress
+
+## Cylinder Installation
+
+Current work
+
+- ✅ InstallationService
+- ⏳ Installation dialog
+- ⏳ Dashboard integration
+- ⏳ Save new installation
+- ⏳ Live Dashboard update
+
+---
+
+# Next Planned Features
+
+## Measurements
+
+- Record cylinder weight
+- Measurement history
+- Delete measurements
+
+## BBQ Sessions
+
+- Record cooking sessions
+- Burner selection
+- Duration
+- Notes
+
+## Statistics
+
+- Weekly consumption
+- Monthly consumption
+- Estimated cylinder lifetime
+
+## Adaptive Calibration
+
+- Compare configured vs measured consumption
+- Recommend equipment adjustment
+- User confirmation before applying changes
+
+---
+
+# Current Project Structure
+
+```
+src/
+├── assets/
+├── components/
+├── models/
+├── pages/
+├── services/
+├── theme/
+├── App.tsx
+└── main.tsx
+```
+
+---
+
+# Current Services
+
+Completed
+
+- GasCalculationService
+- EquipmentService
+- InstallationService
+- defaultEquipment
+- defaultInstallation
+
+---
+
+# Coding Standards
+
+- Complete files preferred over snippets.
+- Keep the application runnable after every session.
+- One logical feature per commit.
+- No architectural redesign unless requested.
+- Follow Roadmap.md, Requirements.md and DomainModel.md as the single source of truth.
+- Production-quality code.
+- Beginner-friendly explanations when introducing new React concepts.
+
+---
+
+# Immediate Next Goal
+
+Complete the **Cylinder Installation** workflow.
+
+Remaining tasks:
+
+1. Add InstallationDialog component.
+2. Integrate Material UI Date Picker.
+3. Connect Dashboard to InstallationDialog.
+4. Save installation using InstallationService.
+5. Refresh Dashboard immediately after saving.
+6. Replace temporary values with user-configured installation.
+
+---
+
+# Suggested Git History
+
+```
+feat: add equipment model
+feat: add equipment setup page
+feat: add application routing
+feat: add editable equipment form
+feat: persist equipment using local storage
+feat: add snackbar save notification
+feat: add installation persistence layer
+```
+
+---
+
+# Overall Progress
+
+| Area | Status |
+|-------|--------|
+| Project Foundation | ✅ Complete |
+| Dashboard | ✅ Complete |
+| Equipment | ✅ Complete |
+| Equipment Persistence | ✅ Complete |
+| Installation Persistence | ✅ Complete |
+| Cylinder Installation UI | 🚧 In Progress |
+| Measurements | ⏳ Planned |
+| BBQ Sessions | ⏳ Planned |
+| Statistics | ⏳ Planned |
+| Adaptive Calibration | ⏳ Planned |
+
+---
+
+# Overall Completion
+
+**Approximately 40% of Version 1.0 MVP**
+
+The application's architecture is now stable. Future work will focus primarily on adding business functionality rather than infrastructure.

@@ -1,6 +1,7 @@
 import type { Installation } from "../models/Installation";
 
 export const defaultInstallation: Installation = {
+  id: crypto.randomUUID(),
   cylinderCapacityKg: 12,
 
   emptyCylinderWeightKg: 13.4,
