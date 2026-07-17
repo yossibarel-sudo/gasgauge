@@ -8,6 +8,7 @@ export class InstallationService {
     const json = localStorage.getItem(STORAGE_KEY);
 
     if (!json) {
+      this.save(defaultInstallation);
       return defaultInstallation;
     }
 
@@ -20,6 +21,9 @@ export class InstallationService {
   }
 
   static save(installation: Installation): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(installation));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(installation)
+    );
   }
 }

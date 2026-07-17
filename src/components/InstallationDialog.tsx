@@ -85,18 +85,19 @@ export default function InstallationDialog({
         />
 
         <TextField
-          margin="normal"
-          fullWidth
-          label="Initial Gross Weight (kg)"
-          type="number"
-          value={editedInstallation.initialGrossWeightKg}
+         margin="normal"
+         fullWidth
+         label="Initial Gross Weight (kg)"
+         type="number"
+         value={editedInstallation.initialGrossWeightKg}
           onChange={(e) =>
-            setEditedInstallation({
-              ...editedInstallation,
-              initialGrossWeightKg: Number(e.target.value),
-            })
-          }
-        />
+         setEditedInstallation({
+         ...editedInstallation,
+         initialGrossWeightKg: Number(e.target.value),
+         currentGrossWeightKg: Number(e.target.value),
+       })
+      }
+    />
       </DialogContent>
 
       <DialogActions>

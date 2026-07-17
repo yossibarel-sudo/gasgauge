@@ -1,3 +1,12 @@
+import { useState } from "react";
+
+import {
+  Button,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+
+import InstallationDialog from "../components/InstallationDialog";
 import { InstallationService } from "../services/InstallationService";
 import { calculateGas } from "../services/GasCalculationService";
 
@@ -10,16 +19,19 @@ function formatDate(date: Date): string {
 }
 
 export default function Dashboard() {
-  const installation = InstallationService.load();
-  const currentWeight = 22.0;
+  const [installation, setInstallation] = useState(
+  () => InstallationService.load()
+);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
+  installation.currentGrossWeightKg
   const gas = calculateGas({
     cylinderCapacityKg: installation.cylinderCapacityKg,
 
     emptyCylinderWeightKg:
         installation.emptyCylinderWeightKg,
 
-    currentGrossWeightKg: currentWeight,
-
+    currentGrossWeightKg: installation.currentGrossWeightKg,
     averageConsumptionKgPerHour: 0.55,
 });
   return (
@@ -54,6 +66,21 @@ export default function Dashboard() {
     formatDate(installation.installDate)
 }
       </p>
+
+<div
+  style={{
+    textAlign: "center",
+    marginTop: "15px",
+    marginBottom: "20px",
+  }}
+>
+  <Button
+    variant="contained"
+    onClick={() => setDialogOpen(true)}
+  >
+    Install New Cylinder
+  </Button>
+</div>
 
       <hr />
 
@@ -134,21 +161,44 @@ export default function Dashboard() {
         </tbody>
       </table>
 
-      <button
-        style={{
-          marginTop: "30px",
-          width: "100%",
-          padding: "15px",
-          background: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "10px",
-          fontSize: "18px",
-          cursor: "pointer",
-        }}
-      >
-        Add Cylinder Weight
-      </button>
+      <Button
+  variant="contained"
+  fullWidth
+  size="large"
+  sx={{ mt: 3 }}
+>
+  Add Cylinder Weight
+</Button>
+   
+    <InstallationDialog
+  open={dialogOpen}
+  installation={installation}
+  onCancel={() => setDialogOpen(false)}
+  onSave={(newInstallation) => {
+    InstallationService.save(newInstallation);
+    setInstallation(newInstallation);
+    setDialogOpen(false);
+    setSaved(true);
+  }}
+/>
+    <Snackbar
+  open={saved}
+  autoHideDuration={3000}
+  onClose={() => setSaved(false)}
+  anchorOrigin={{
+    vertical: "bottom",
+    horizontal: "center",
+  }}
+>
+  <Alert
+    severity="success"
+    variant="filled"
+    onClose={() => setSaved(false)}
+  >
+    New cylinder installed successfully.
+  </Alert>
+</Snackbar>
+
     </div>
   );
 }
