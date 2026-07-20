@@ -1,14 +1,19 @@
 import { useState } from "react";
 
 import {
+  Alert,
   Button,
   Snackbar,
-  Alert,
 } from "@mui/material";
 
 import InstallationDialog from "../components/InstallationDialog";
-import { InstallationService } from "../services/InstallationService";
+import WeightDialog from "../components/WeightDialog";
+
 import { calculateGas } from "../services/GasCalculationService";
+import { InstallationService } from "../services/InstallationService";
+import { MeasurementService } from "../services/MeasurementService";
+
+import type { Installation } from "../models/Installation";
 
 function formatDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, "0");
@@ -19,21 +24,87 @@ function formatDate(date: Date): string {
 }
 
 export default function Dashboard() {
-  const [installation, setInstallation] = useState(
-  () => InstallationService.load()
-);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
-  installation.currentGrossWeightKg
+  const [installation, setInstallation] = useState<Installation>(
+    () => InstallationService.load()
+  );
+
+  const [installationDialogOpen, setInstallationDialogOpen] =
+    useState(false);
+
+  const [weightDialogOpen, setWeightDialogOpen] =
+    useState(false);
+
+  const [showInstallSaved, setShowInstallSaved] =
+    useState(false);
+
+  const [showWeightSaved, setShowWeightSaved] =
+    useState(false);
+
   const gas = calculateGas({
     cylinderCapacityKg: installation.cylinderCapacityKg,
 
     emptyCylinderWeightKg:
-        installation.emptyCylinderWeightKg,
+      installation.emptyCylinderWeightKg,
 
-    currentGrossWeightKg: installation.currentGrossWeightKg,
+    currentGrossWeightKg:
+      installation.currentGrossWeightKg,
+
     averageConsumptionKgPerHour: 0.55,
-});
+  });
+
+  function saveInstallation(newInstallation: Installation) {
+    InstallationService.save(newInstallation);
+
+    setInstallation(newInstallation);
+
+    setInstallationDialogOpen(false);
+
+    setShowInstallSaved(true);
+  }
+
+  function saveWeight(weight: number) {
+  const updatedInstallation: Installation = {
+    ...installation,
+    currentGrossWeightKg: weight,
+  };
+ 
+  setLatestMeasurement(MeasurementService.latest());
+
+  const gas = calculateGas({
+    cylinderCapacityKg: updatedInstallation.cylinderCapacityKg,
+
+    emptyCylinderWeightKg:
+      updatedInstallation.emptyCylinderWeightKg,
+
+    currentGrossWeightKg:
+      updatedInstallation.currentGrossWeightKg,
+
+    averageConsumptionKgPerHour: 0.55,
+  });
+
+  InstallationService.save(updatedInstallation);
+
+  MeasurementService.save({
+    date: new Date(),
+
+    grossWeightKg: weight,
+
+    remainingLpgKg: gas.remainingLpgKg,
+
+    remainingPercent: gas.remainingPercent,
+  });
+
+  setInstallation(updatedInstallation);
+
+  setWeightDialogOpen(false);
+
+  setShowWeightSaved(true);
+}
+
+ const [latestMeasurement, setLatestMeasurement] = useState(
+  () => MeasurementService.latest()
+);
+
   return (
     <div
       style={{
@@ -48,7 +119,6 @@ export default function Dashboard() {
         style={{
           textAlign: "center",
           color: "#4CAF50",
-          marginBottom: "5px",
         }}
       >
         GasGauge
@@ -57,74 +127,77 @@ export default function Dashboard() {
       <p
         style={{
           textAlign: "center",
-          color: "#B0B0B0",
-          marginBottom: "30px",
+          color: "#AAAAAA",
         }}
       >
         Cylinder Installed:
-{
-    formatDate(installation.installDate)
-}
+        <br />
+        {formatDate(installation.installDate)}
+        {latestMeasurement && (
+  <p
+    style={{
+      textAlign: "center",
+      color: "#AAAAAA",
+      marginTop: "-10px",
+      fontSize: "14px",
+    }}
+  >
+    Last Weight:{" "}
+    {latestMeasurement.grossWeightKg.toFixed(2)} kg
+  </p>
+)}
       </p>
 
-<div
-  style={{
-    textAlign: "center",
-    marginTop: "15px",
-    marginBottom: "20px",
-  }}
->
-  <Button
-    variant="contained"
-    onClick={() => setDialogOpen(true)}
-  >
-    Install New Cylinder
-  </Button>
-</div>
+      <Button
+        fullWidth
+        variant="contained"
+        sx={{ mb: 2 }}
+        onClick={() =>
+          setInstallationDialogOpen(true)
+        }
+      >
+        Install New Cylinder
+      </Button>
 
       <hr />
 
       <h2
         style={{
           textAlign: "center",
-          color: "#E0E0E0",
-          marginTop: "20px",
+          color: "white",
         }}
       >
         Remaining LPG
       </h2>
 
-     <div style={{ textAlign: "center" }}>
-      <h1
-        style={{
-         fontSize: "64px",
-         color: "#4CAF50",
-         marginBottom: "0px",
-       }}
-      >
-       {gas.remainingPercent.toFixed(0)}%
-      </h1>
+      <div style={{ textAlign: "center" }}>
+        <h1
+          style={{
+            fontSize: "64px",
+            color: "#4CAF50",
+            marginBottom: 0,
+          }}
+        >
+          {gas.remainingPercent.toFixed(0)}%
+        </h1>
 
-    <div
-        style={{
-         color: "white",
-         fontSize: "26px",
-         marginTop: "15px",
-       }}
-     >
-       {gas.remainingLpgKg.toFixed(2)} kg
-     </div>
+        <div
+          style={{
+            color: "white",
+            fontSize: "28px",
+          }}
+        >
+          {gas.remainingLpgKg.toFixed(2)} kg
+        </div>
 
-  <div
-    style={{
-      color: "#AAAAAA",
-      fontSize: "16px",
-      marginTop: "8px",
-    }}
-  >
-    of {installation.cylinderCapacityKg} kg
-  </div>
-</div>
+        <div
+          style={{
+            color: "#AAAAAA",
+          }}
+        >
+          of {installation.cylinderCapacityKg} kg
+        </div>
+      </div>
 
       <hr />
 
@@ -132,22 +205,36 @@ export default function Dashboard() {
         style={{
           width: "100%",
           color: "white",
-          marginTop: "20px",
         }}
       >
         <tbody>
           <tr>
+            <td>Current Weight</td>
+            <td align="right">
+              {installation.currentGrossWeightKg.toFixed(
+                2
+              )}{" "}
+              kg
+            </td>
+          </tr>
+
+          <tr>
             <td>Remaining BBQ Sessions</td>
-            <td align="right">{gas.remainingSessions.toFixed(1)}</td>
+            <td align="right">
+              {gas.remainingSessions.toFixed(1)}
+            </td>
           </tr>
 
           <tr>
             <td>Cooking Hours</td>
-            <td align="right">{gas.remainingHours.toFixed(1)}</td>
+            <td align="right">
+              {gas.remainingHours.toFixed(1)}
+            </td>
           </tr>
 
           <tr>
             <td>Status</td>
+
             <td
               align="right"
               style={{
@@ -162,43 +249,74 @@ export default function Dashboard() {
       </table>
 
       <Button
-  variant="contained"
-  fullWidth
-  size="large"
-  sx={{ mt: 3 }}
->
-  Add Cylinder Weight
-</Button>
-   
-    <InstallationDialog
-  open={dialogOpen}
-  installation={installation}
-  onCancel={() => setDialogOpen(false)}
-  onSave={(newInstallation) => {
-    InstallationService.save(newInstallation);
-    setInstallation(newInstallation);
-    setDialogOpen(false);
-    setSaved(true);
-  }}
-/>
-    <Snackbar
-  open={saved}
-  autoHideDuration={3000}
-  onClose={() => setSaved(false)}
-  anchorOrigin={{
-    vertical: "bottom",
-    horizontal: "center",
-  }}
->
-  <Alert
-    severity="success"
-    variant="filled"
-    onClose={() => setSaved(false)}
-  >
-    New cylinder installed successfully.
-  </Alert>
-</Snackbar>
+        fullWidth
+        size="large"
+        variant="contained"
+        sx={{ mt: 3 }}
+        onClick={() =>
+          setWeightDialogOpen(true)
+        }
+      >
+        Add Cylinder Weight
+      </Button>
 
+      <InstallationDialog
+        open={installationDialogOpen}
+        installation={installation}
+        onCancel={() =>
+          setInstallationDialogOpen(false)
+        }
+        onSave={saveInstallation}
+      />
+
+      <WeightDialog
+        open={weightDialogOpen}
+        currentWeight={
+          installation.currentGrossWeightKg
+        }
+        onCancel={() =>
+          setWeightDialogOpen(false)
+        }
+        onSave={saveWeight}
+      />
+
+      <Snackbar
+        open={showInstallSaved}
+        autoHideDuration={3000}
+        onClose={() =>
+          setShowInstallSaved(false)
+        }
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+      >
+        <Alert
+          severity="success"
+          variant="filled"
+        >
+          New cylinder installed.
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={showWeightSaved}
+        autoHideDuration={3000}
+        onClose={() =>
+          setShowWeightSaved(false)
+        }
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+      >
+        <Alert
+          severity="success"
+          variant="filled"
+        >
+          Weight updated.
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
