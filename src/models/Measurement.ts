@@ -9,5 +9,7 @@ export interface Measurement {
 
   remainingPercent: number;
 
+  bbqHoursSincePrevious?: number;
+
   notes?: string;
 }

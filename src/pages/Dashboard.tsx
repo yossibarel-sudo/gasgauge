@@ -74,7 +74,13 @@ export default function Dashboard({
 
     averageConsumptionKgPerHour: 0.55,
   });
-
+  const measurements = MeasurementService.load();
+    const cylinderAgeDays = Math.floor(
+      (new Date().getTime() -
+       installation.installDate.getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
+  
   function saveInstallation(
     newInstallation: Installation
   ) {
@@ -224,7 +230,120 @@ export default function Dashboard({
           Measurement History
         </Button>
       </div>
+       <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "10px",
+    marginBottom: "20px",
+  }}
+>
+  <div
+    style={{
+      background: "#2A2A2A",
+      borderRadius: "10px",
+      padding: "12px",
+    }}
+  >
+    <div
+      style={{
+        color: "#AAAAAA",
+        fontSize: "13px",
+      }}
+    >
+      Current Weight
+    </div>
 
+    <div
+      style={{
+        color: "white",
+        fontSize: "22px",
+      }}
+    >
+      {installation.currentGrossWeightKg.toFixed(2)} kg
+    </div>
+  </div>
+
+  <div
+    style={{
+      background: "#2A2A2A",
+      borderRadius: "10px",
+      padding: "12px",
+    }}
+  >
+    <div
+      style={{
+        color: "#AAAAAA",
+        fontSize: "13px",
+      }}
+    >
+      Last Measurement
+    </div>
+
+    <div
+      style={{
+        color: "white",
+        fontSize: "22px",
+      }}
+    >
+      {latestMeasurement
+        ? formatDate(latestMeasurement.date)
+        : "--"}
+    </div>
+  </div>
+
+  <div
+    style={{
+      background: "#2A2A2A",
+      borderRadius: "10px",
+      padding: "12px",
+    }}
+  >
+    <div
+      style={{
+        color: "#AAAAAA",
+        fontSize: "13px",
+      }}
+    >
+      Measurements
+    </div>
+
+    <div
+      style={{
+        color: "white",
+        fontSize: "22px",
+      }}
+    >
+      {measurements.length}
+    </div>
+  </div>
+
+  <div
+    style={{
+      background: "#2A2A2A",
+      borderRadius: "10px",
+      padding: "12px",
+    }}
+  >
+    <div
+      style={{
+        color: "#AAAAAA",
+        fontSize: "13px",
+      }}
+    >
+      Cylinder Age
+    </div>
+
+    <div
+      style={{
+        color: "white",
+        fontSize: "22px",
+      }}
+    >
+      {cylinderAgeDays} days
+    </div>
+  </div>
+</div>
       <hr />
 
       <h2
