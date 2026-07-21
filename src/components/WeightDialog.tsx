@@ -12,7 +12,7 @@ interface WeightDialogProps {
   open: boolean;
   currentWeight: number;
   onCancel: () => void;
-  onSave: (weight: number) => void;
+  onSave: (weight: number, bbqHours: number) => void;
 }
 
 export default function WeightDialog({
@@ -22,10 +22,12 @@ export default function WeightDialog({
   onSave,
 }: WeightDialogProps) {
   const [weight, setWeight] = useState(currentWeight);
+  const [bbqHours, setBbqHours] = useState(0);
 
   useEffect(() => {
-    setWeight(currentWeight);
-  }, [currentWeight]);
+  setWeight(currentWeight);
+  setBbqHours(0);
+}, [currentWeight]);
 
   return (
     <Dialog
@@ -53,6 +55,24 @@ export default function WeightDialog({
             setWeight(Number(e.target.value))
           }
         />
+        <TextField
+  fullWidth
+  margin="normal"
+  label="BBQ Hours Since Previous Weight"
+  type="number"
+  value={bbqHours}
+  slotProps={{
+    htmlInput: {
+      step: 0.1,
+      min: 0,
+    },
+  }}
+  onChange={(e) =>
+    setBbqHours(
+      Number(e.target.value)
+    )
+  }
+/>
       </DialogContent>
 
       <DialogActions>
@@ -62,7 +82,7 @@ export default function WeightDialog({
 
         <Button
           variant="contained"
-          onClick={() => onSave(weight)}
+          onClick={() => onSave(weight, bbqHours)}
         >
           Save
         </Button>

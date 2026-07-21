@@ -9,6 +9,8 @@ export interface AnalysisResult {
 
   remainingPercent: number;
 
+  status: "GOOD" | "LOW" | "CRITICAL";
+
   theoreticalKgPerHour: number;
 
   actualKgPerHour: number | null;
@@ -93,7 +95,15 @@ export class AnalysisService {
         installation.installDate.getTime()) /
         (1000 * 60 * 60 * 24)
     );
+let status: "GOOD" | "LOW" | "CRITICAL";
 
+if (remainingPercent > 40) {
+  status = "GOOD";
+} else if (remainingPercent > 20) {
+  status = "LOW";
+} else {
+  status = "CRITICAL";
+}
     return {
       currentGasKg,
 
@@ -114,6 +124,8 @@ export class AnalysisService {
       totalCookingHours,
 
       averageSessionHours,
+
+      status,
     };
   }
 }

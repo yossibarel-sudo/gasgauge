@@ -10,6 +10,8 @@ import InstallationDialog from "../components/InstallationDialog";
 import WeightDialog from "../components/WeightDialog";
 
 import { calculateGas } from "../services/GasCalculationService";
+import { AnalysisService } from "../services/AnalysisService";
+import { EquipmentService } from "../services/EquipmentService";
 import { InstallationService } from "../services/InstallationService";
 import { MeasurementService } from "../services/MeasurementService";
 
@@ -32,6 +34,7 @@ export default function Dashboard({
   onEquipment,
   onMeasurements,
 }: DashboardProps) {
+
   const [installation, setInstallation] =
     useState<Installation>(() =>
       InstallationService.load()
@@ -62,86 +65,115 @@ export default function Dashboard({
     setShowWeightSaved,
   ] = useState(false);
 
-  const gas = calculateGas({
-    cylinderCapacityKg:
-      installation.cylinderCapacityKg,
 
-    emptyCylinderWeightKg:
-      installation.emptyCylinderWeightKg,
+  const measurements =
+    MeasurementService.load();
 
-    currentGrossWeightKg:
-      installation.currentGrossWeightKg,
+  const equipment =
+    EquipmentService.load();
 
-    averageConsumptionKgPerHour: 0.55,
-  });
-  const measurements = MeasurementService.load();
-    const cylinderAgeDays = Math.floor(
-      (new Date().getTime() -
-       installation.installDate.getTime()) /
+
+  const analysis =
+    AnalysisService.analyze(
+      installation,
+      equipment,
+      measurements
+    );
+
+
+  const cylinderAgeDays =
+    Math.floor(
+      (
+        new Date().getTime() -
+        installation.installDate.getTime()
+      ) /
       (1000 * 60 * 60 * 24)
-  );
-  
+    );
+
+
   function saveInstallation(
     newInstallation: Installation
   ) {
-    InstallationService.save(newInstallation);
 
-    setInstallation(newInstallation);
+    InstallationService.save(
+      newInstallation
+    );
+
+    setInstallation(
+      newInstallation
+    );
 
     setInstallationDialogOpen(false);
 
     setShowInstallSaved(true);
   }
 
-  function saveWeight(weight: number) {
+
+ function saveWeight(
+  weight: number,
+  bbqHours: number
+) {
+
     const updatedInstallation: Installation = {
       ...installation,
       currentGrossWeightKg: weight,
     };
 
-    const gas = calculateGas({
-      cylinderCapacityKg:
-        updatedInstallation.cylinderCapacityKg,
 
-      emptyCylinderWeightKg:
-        updatedInstallation.emptyCylinderWeightKg,
+    const gas =
+      calculateGas({
+        cylinderCapacityKg:
+          updatedInstallation.cylinderCapacityKg,
 
-      currentGrossWeightKg:
-        updatedInstallation.currentGrossWeightKg,
+        emptyCylinderWeightKg:
+          updatedInstallation.emptyCylinderWeightKg,
 
-      averageConsumptionKgPerHour: 0.55,
-    });
+        currentGrossWeightKg:
+          updatedInstallation.currentGrossWeightKg,
+
+        averageConsumptionKgPerHour: 0.55,
+      });
+
 
     InstallationService.save(
       updatedInstallation
     );
 
-    MeasurementService.save({
-      id: crypto.randomUUID(),
+MeasurementService.save({
+  id: crypto.randomUUID(),
 
-      date: new Date(),
+  date: new Date(),
 
-      grossWeightKg: weight,
+  grossWeightKg: weight,
 
-      remainingLpgKg:
-        gas.remainingLpgKg,
+  remainingLpgKg:
+    gas.remainingLpgKg,
 
-      remainingPercent:
-        gas.remainingPercent,
-    });
+  remainingPercent:
+    gas.remainingPercent,
+
+  bbqHoursSincePrevious:
+    bbqHours > 0
+      ? bbqHours
+      : undefined,
+});
+
 
     setLatestMeasurement(
       MeasurementService.latest()
     );
 
+
     setInstallation(
       updatedInstallation
     );
+
 
     setWeightDialogOpen(false);
 
     setShowWeightSaved(true);
   }
+
 
   return (
     <div
@@ -154,6 +186,7 @@ export default function Dashboard({
           "0 0 25px rgba(0,0,0,0.5)",
       }}
     >
+
       <h1
         style={{
           textAlign: "center",
@@ -163,6 +196,7 @@ export default function Dashboard({
         GasGauge
       </h1>
 
+
       <div
         style={{
           textAlign: "center",
@@ -170,6 +204,7 @@ export default function Dashboard({
           marginBottom: "20px",
         }}
       >
+
         <div>
           Cylinder Installed:
         </div>
@@ -180,6 +215,7 @@ export default function Dashboard({
           )}
         </div>
 
+
         {latestMeasurement && (
           <div
             style={{
@@ -188,13 +224,13 @@ export default function Dashboard({
             }}
           >
             Last Weight{" "}
-            {latestMeasurement.grossWeightKg.toFixed(
-              2
-            )}{" "}
-            kg
+            {latestMeasurement.grossWeightKg.toFixed(2)}
+            {" "}kg
           </div>
         )}
+
       </div>
+
 
       <Button
         fullWidth
@@ -207,6 +243,7 @@ export default function Dashboard({
         Install New Cylinder
       </Button>
 
+
       <div
         style={{
           display: "flex",
@@ -214,6 +251,7 @@ export default function Dashboard({
           marginBottom: "20px",
         }}
       >
+
         <Button
           fullWidth
           variant="outlined"
@@ -222,6 +260,7 @@ export default function Dashboard({
           Equipment
         </Button>
 
+
         <Button
           fullWidth
           variant="outlined"
@@ -229,122 +268,67 @@ export default function Dashboard({
         >
           Measurement History
         </Button>
+
       </div>
-       <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "10px",
-    marginBottom: "20px",
-  }}
->
-  <div
-    style={{
-      background: "#2A2A2A",
-      borderRadius: "10px",
-      padding: "12px",
-    }}
-  >
-    <div
-      style={{
-        color: "#AAAAAA",
-        fontSize: "13px",
-      }}
-    >
-      Current Weight
-    </div>
+           <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "10px",
+          marginBottom: "20px",
+        }}
+      >
 
-    <div
-      style={{
-        color: "white",
-        fontSize: "22px",
-      }}
-    >
-      {installation.currentGrossWeightKg.toFixed(2)} kg
-    </div>
-  </div>
+        <div style={metricCardStyle}>
+          <div style={metricTitleStyle}>
+            Current Weight
+          </div>
 
-  <div
-    style={{
-      background: "#2A2A2A",
-      borderRadius: "10px",
-      padding: "12px",
-    }}
-  >
-    <div
-      style={{
-        color: "#AAAAAA",
-        fontSize: "13px",
-      }}
-    >
-      Last Measurement
-    </div>
+          <div style={metricValueStyle}>
+            {installation.currentGrossWeightKg.toFixed(2)} kg
+          </div>
+        </div>
 
-    <div
-      style={{
-        color: "white",
-        fontSize: "22px",
-      }}
-    >
-      {latestMeasurement
-        ? formatDate(latestMeasurement.date)
-        : "--"}
-    </div>
-  </div>
 
-  <div
-    style={{
-      background: "#2A2A2A",
-      borderRadius: "10px",
-      padding: "12px",
-    }}
-  >
-    <div
-      style={{
-        color: "#AAAAAA",
-        fontSize: "13px",
-      }}
-    >
-      Measurements
-    </div>
+        <div style={metricCardStyle}>
+          <div style={metricTitleStyle}>
+            Last Measurement
+          </div>
 
-    <div
-      style={{
-        color: "white",
-        fontSize: "22px",
-      }}
-    >
-      {measurements.length}
-    </div>
-  </div>
+          <div style={metricValueStyle}>
+            {latestMeasurement
+              ? formatDate(latestMeasurement.date)
+              : "--"}
+          </div>
+        </div>
 
-  <div
-    style={{
-      background: "#2A2A2A",
-      borderRadius: "10px",
-      padding: "12px",
-    }}
-  >
-    <div
-      style={{
-        color: "#AAAAAA",
-        fontSize: "13px",
-      }}
-    >
-      Cylinder Age
-    </div>
 
-    <div
-      style={{
-        color: "white",
-        fontSize: "22px",
-      }}
-    >
-      {cylinderAgeDays} days
-    </div>
-  </div>
-</div>
+        <div style={metricCardStyle}>
+          <div style={metricTitleStyle}>
+            Measurements
+          </div>
+
+          <div style={metricValueStyle}>
+            {measurements.length}
+          </div>
+        </div>
+
+
+        <div style={metricCardStyle}>
+          <div style={metricTitleStyle}>
+            Cylinder Age
+          </div>
+
+          <div style={metricValueStyle}>
+            {cylinderAgeDays} days
+          </div>
+        </div>
+
+      </div>
+
+
       <hr />
+
 
       <h2
         style={{
@@ -355,7 +339,9 @@ export default function Dashboard({
         Remaining LPG
       </h2>
 
+
       <div style={{ textAlign: "center" }}>
+
         <h1
           style={{
             fontSize: "64px",
@@ -363,8 +349,9 @@ export default function Dashboard({
             marginBottom: 0,
           }}
         >
-          {gas.remainingPercent.toFixed(0)}%
+          {analysis.remainingPercent.toFixed(0)}%
         </h1>
+
 
         <div
           style={{
@@ -372,8 +359,9 @@ export default function Dashboard({
             fontSize: "28px",
           }}
         >
-          {gas.remainingLpgKg.toFixed(2)} kg
+          {analysis.currentGasKg.toFixed(2)} kg
         </div>
+
 
         <div
           style={{
@@ -382,9 +370,12 @@ export default function Dashboard({
         >
           of {installation.cylinderCapacityKg} kg
         </div>
+
       </div>
 
+
       <hr />
+
 
       <table
         style={{
@@ -392,30 +383,39 @@ export default function Dashboard({
           color: "white",
         }}
       >
+
         <tbody>
+
           <tr>
             <td>Current Weight</td>
+
             <td align="right">
-              {installation.currentGrossWeightKg.toFixed(
-                2
-              )}{" "}
-              kg
+              {installation.currentGrossWeightKg.toFixed(2)} kg
             </td>
           </tr>
+
 
           <tr>
             <td>Remaining BBQ Sessions</td>
+
             <td align="right">
-              {gas.remainingSessions.toFixed(1)}
+              {analysis.estimatedRemainingSessions !== null
+                ? analysis.estimatedRemainingSessions.toFixed(1)
+                : "--"}
             </td>
           </tr>
 
+
           <tr>
             <td>Cooking Hours</td>
+
             <td align="right">
-              {gas.remainingHours.toFixed(1)}
+              {analysis.remainingHours !== null
+                ? analysis.remainingHours.toFixed(1)
+                : "--"}
             </td>
           </tr>
+
 
           <tr>
             <td>Status</td>
@@ -427,11 +427,15 @@ export default function Dashboard({
                 fontWeight: "bold",
               }}
             >
-              {gas.status}
+              {analysis.status}
             </td>
+
           </tr>
+
         </tbody>
+
       </table>
+
 
       <Button
         fullWidth
@@ -445,6 +449,7 @@ export default function Dashboard({
         Add Cylinder Weight
       </Button>
 
+
       <InstallationDialog
         open={installationDialogOpen}
         installation={installation}
@@ -453,6 +458,7 @@ export default function Dashboard({
         }
         onSave={saveInstallation}
       />
+
 
       <WeightDialog
         open={weightDialogOpen}
@@ -465,6 +471,7 @@ export default function Dashboard({
         onSave={saveWeight}
       />
 
+
       <Snackbar
         open={showInstallSaved}
         autoHideDuration={3000}
@@ -476,13 +483,16 @@ export default function Dashboard({
           horizontal: "center",
         }}
       >
+
         <Alert
           severity="success"
           variant="filled"
         >
           New cylinder installed.
         </Alert>
+
       </Snackbar>
+
 
       <Snackbar
         open={showWeightSaved}
@@ -495,13 +505,36 @@ export default function Dashboard({
           horizontal: "center",
         }}
       >
+
         <Alert
           severity="success"
           variant="filled"
         >
           Weight updated.
         </Alert>
+
       </Snackbar>
+
+
     </div>
   );
 }
+
+
+const metricCardStyle = {
+  background: "#2A2A2A",
+  borderRadius: "10px",
+  padding: "12px",
+};
+
+
+const metricTitleStyle = {
+  color: "#AAAAAA",
+  fontSize: "13px",
+};
+
+
+const metricValueStyle = {
+  color: "white",
+  fontSize: "22px",
+};
