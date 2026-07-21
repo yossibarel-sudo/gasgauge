@@ -1,45 +1,59 @@
-import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import { useState } from "react";
 
 import Dashboard from "./pages/Dashboard";
 import EquipmentPage from "./pages/EquipmentPage";
+import MeasurementsPage from "./pages/MeasurementsPage";
+
+type Page =
+  | "dashboard"
+  | "equipment"
+  | "measurements";
 
 export default function App() {
+  const [page, setPage] =
+    useState<Page>("dashboard");
+
+  if (page === "equipment") {
+    return (
+      <div>
+        <EquipmentPage />
+
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "20px",
+          }}
+        >
+          <button
+            onClick={() =>
+              setPage("dashboard")
+            }
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (page === "measurements") {
+    return (
+      <MeasurementsPage
+        onBack={() =>
+          setPage("dashboard")
+        }
+      />
+    );
+  }
+
   return (
-    <BrowserRouter>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography
-            variant="h6"
-            sx={{ flexGrow: 1 }}
-          >
-            GasGauge
-          </Typography>
-
-          <Button
-            color="inherit"
-            component={Link}
-            to="/"
-          >
-            Dashboard
-          </Button>
-
-          <Button
-            color="inherit"
-            component={Link}
-            to="/equipment"
-          >
-            Equipment
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Box sx={{ p: 3 }}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/equipment" element={<EquipmentPage />} />
-        </Routes>
-      </Box>
-    </BrowserRouter>
+    <Dashboard
+      onEquipment={() =>
+        setPage("equipment")
+      }
+      onMeasurements={() =>
+        setPage("measurements")
+      }
+    />
   );
 }

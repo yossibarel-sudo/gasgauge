@@ -1,228 +1,266 @@
-## Sprint Progress
+# GasGauge Project Status
 
-Sprint 1  ✅ Complete
-Sprint 2  🚧 65%
-Sprint 3  ⏳ Planned
-
----
-# GasGauge - Project Status
-
-**Last Updated:** July 2026
+Last Updated
+21 July 2026
 
 ---
 
-# Project Overview
+# Project Goal
 
-GasGauge is a Progressive Web Application (PWA) for estimating the remaining LPG in a gas cylinder based on cylinder weight measurements and gas appliance specifications.
+GasGauge is a Progressive Web Application (PWA) for estimating the remaining LPG in a gas cylinder using:
 
-The application is built using:
+- Cylinder weight
+- Equipment specifications
+- Historical measurements
+
+Technology Stack
 
 - React 19
 - TypeScript
 - Vite
 - Material UI
+- LocalStorage
 
 ---
 
 # Current Sprint
 
-## Sprint 2
+Sprint 2 – Cylinder Tracking
 
-### Objective
-
-Complete the core application workflow:
-
-Equipment → Cylinder Installation → Dashboard → Measurements
+Status:
+🟢 In Progress
 
 ---
 
-# Completed Features
+# Completed
 
 ## Project Foundation
 
-- ✅ React + Vite
-- ✅ TypeScript
-- ✅ Material UI
-- ✅ React Router navigation
-- ✅ GitHub repository
-- ✅ Project documentation
+✔ React + Vite configured
+
+✔ TypeScript configured
+
+✔ Material UI configured
+
+✔ Project structure created
+
+✔ GitHub repository connected
 
 ---
 
 ## Dashboard
 
-Completed
+✔ Remaining LPG %
 
-- ✅ Remaining LPG (%)
-- ✅ Remaining LPG (kg)
-- ✅ Remaining cooking hours
-- ✅ Remaining BBQ sessions
-- ✅ Cylinder status
-- ✅ Installation date
-- ✅ Gas calculation engine integration
+✔ Remaining LPG (kg)
+
+✔ Remaining cooking hours
+
+✔ Remaining BBQ sessions
+
+✔ Cylinder status
+
+✔ Cylinder installation date
+
+✔ DD/MM/YYYY date formatting
+
+✔ Snackbar notifications
 
 ---
 
 ## Equipment
 
-Completed
+✔ Equipment model
 
-- ✅ Equipment domain model
-- ✅ Burner model
-- ✅ Default equipment
-- ✅ Equipment Setup page
-- ✅ Editable equipment form
-- ✅ Burner editing
-- ✅ Save button
-- ✅ Snackbar confirmation
-- ✅ Equipment persistence using localStorage
+✔ Burner model
+
+✔ Default equipment
+
+✔ Equipment setup page
+
+✔ Gas consumption calculation
 
 ---
-
-## Persistence
-
-Completed
-
-- ✅ EquipmentService
-- ✅ InstallationService
-- ✅ localStorage integration
-- ✅ Automatic loading of saved equipment
-- ✅ Automatic loading of saved installation
-- ✅ Proper Date restoration after JSON loading
-
----
-
-# In Progress
 
 ## Cylinder Installation
 
-Current work
+✔ Installation model
 
-- ✅ InstallationService
-- ⏳ Installation dialog
-- ⏳ Dashboard integration
-- ⏳ Save new installation
-- ⏳ Live Dashboard update
+✔ Installation dialog
+
+✔ LocalStorage persistence
+
+✔ Dashboard updates immediately after installation
 
 ---
 
-# Next Planned Features
+## Current Cylinder Weight
+
+✔ Weight dialog
+
+✔ Current cylinder weight stored
+
+✔ Dashboard recalculates immediately
+
+✔ LocalStorage updated
+
+---
 
 ## Measurements
 
-- Record cylinder weight
-- Measurement history
-- Delete measurements
+✔ Measurement model
 
-## BBQ Sessions
+✔ MeasurementService
 
-- Record cooking sessions
-- Burner selection
-- Duration
-- Notes
+Supports:
+
+- Save
+- Load
+- Latest
+- Delete
+- Clear
+
+---
+
+# Current File Structure
+
+src/
+
+assets/
+
+components/
+- InstallationDialog.tsx
+- WeightDialog.tsx
+
+models/
+- Equipment.ts
+- Installation.ts
+- Measurement.ts
+
+pages/
+- Dashboard.tsx
+- EquipmentPage.tsx
+
+services/
+- defaultEquipment.ts
+- defaultInstallation.ts
+- GasCalculationService.ts
+- InstallationService.ts
+- MeasurementService.ts
+
+theme/
+
+App.tsx
+
+main.tsx
+
+---
+
+# Next Milestone
+
+Measurement History
+
+Tasks:
+
+- Save measurement from Dashboard
+- Display latest measurement
+- Measurements page
+- Delete measurement
+- Navigation between Dashboard and Measurements
+
+---
+
+# Future Milestones
 
 ## Statistics
 
 - Weekly consumption
+
 - Monthly consumption
-- Estimated cylinder lifetime
+
+- Average consumption
+
+- Cylinder lifetime estimation
+
+---
+
+## BBQ Sessions
+
+- Session recording
+
+- Burner selection
+
+- Consumption estimation
+
+---
 
 ## Adaptive Calibration
 
-- Compare configured vs measured consumption
-- Recommend equipment adjustment
-- User confirmation before applying changes
+Compare:
+
+Configured consumption
+
+vs
+
+Measured consumption
+
+Recommend equipment update when deviation exceeds ±10%.
 
 ---
 
-# Current Project Structure
+# Coding Rules
 
-```
-src/
-├── assets/
-├── components/
-├── models/
-├── pages/
-├── services/
-├── theme/
-├── App.tsx
-└── main.tsx
-```
+- Keep complete files.
+- Maintain production-quality code.
+- No architecture redesign unless requested.
+- Keep Roadmap.md, Requirements.md and DomainModel.md as the single source of truth.
+- Finish every coding session with runnable code.
+- Use Material UI components whenever practical.
+- Prefer React state over repeated LocalStorage reads.
+- Maintain backward compatibility where possible.
 
 ---
 
-# Current Services
+# Git Milestones
 
-Completed
+Sprint 1
 
-- GasCalculationService
-- EquipmentService
-- InstallationService
-- defaultEquipment
-- defaultInstallation
+Initial project
 
----
+Sprint 1.5
 
-# Coding Standards
+Dashboard
 
-- Complete files preferred over snippets.
-- Keep the application runnable after every session.
-- One logical feature per commit.
-- No architectural redesign unless requested.
-- Follow Roadmap.md, Requirements.md and DomainModel.md as the single source of truth.
-- Production-quality code.
-- Beginner-friendly explanations when introducing new React concepts.
+Equipment
 
----
+Installation
 
-# Immediate Next Goal
+Sprint 2 (current)
 
-Complete the **Cylinder Installation** workflow.
+Measurement infrastructure
 
-Remaining tasks:
+Weight dialog
 
-1. Add InstallationDialog component.
-2. Integrate Material UI Date Picker.
-3. Connect Dashboard to InstallationDialog.
-4. Save installation using InstallationService.
-5. Refresh Dashboard immediately after saving.
-6. Replace temporary values with user-configured installation.
+Current weight persistence
+
+Measurement history (in progress)
 
 ---
 
-# Suggested Git History
+# Weekend Goal
 
-```
-feat: add equipment model
-feat: add equipment setup page
-feat: add application routing
-feat: add editable equipment form
-feat: persist equipment using local storage
-feat: add snackbar save notification
-feat: add installation persistence layer
-```
+Deliver a fully usable application with:
 
----
+✔ Dashboard
 
-# Overall Progress
+✔ Equipment
 
-| Area | Status |
-|-------|--------|
-| Project Foundation | ✅ Complete |
-| Dashboard | ✅ Complete |
-| Equipment | ✅ Complete |
-| Equipment Persistence | ✅ Complete |
-| Installation Persistence | ✅ Complete |
-| Cylinder Installation UI | 🚧 In Progress |
-| Measurements | ⏳ Planned |
-| BBQ Sessions | ⏳ Planned |
-| Statistics | ⏳ Planned |
-| Adaptive Calibration | ⏳ Planned |
+✔ Cylinder Installation
 
----
+✔ Current Weight
 
-# Overall Completion
+✔ Measurement History
 
-**Approximately 40% of Version 1.0 MVP**
+✔ Statistics (basic)
 
-The application's architecture is now stable. Future work will focus primarily on adding business functionality rather than infrastructure.
+Ready for real-life LPG tracking.

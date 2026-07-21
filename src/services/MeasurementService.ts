@@ -37,21 +37,19 @@ export class MeasurementService {
     );
   }
 
-  static delete(index: number): void {
-    const measurements = this.load();
+  static delete(id: string): void {
+  const measurements = this.load();
 
-    if (index < 0 || index >= measurements.length) {
-      return;
-    }
+  const updatedMeasurements = measurements.filter(
+    (measurement) => measurement.id !== id
+  );
 
-    measurements.splice(index, 1);
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(measurements)
-    );
-  }
-
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(updatedMeasurements)
+  );
+}
+  
   static latest(): Measurement | null {
     const measurements = this.load();
 

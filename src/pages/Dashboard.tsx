@@ -15,6 +15,11 @@ import { MeasurementService } from "../services/MeasurementService";
 
 import type { Installation } from "../models/Installation";
 
+interface DashboardProps {
+  onEquipment: () => void;
+  onMeasurements: () => void;
+}
+
 function formatDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -23,25 +28,43 @@ function formatDate(date: Date): string {
   return `${day}/${month}/${year}`;
 }
 
-export default function Dashboard() {
-  const [installation, setInstallation] = useState<Installation>(
-    () => InstallationService.load()
-  );
+export default function Dashboard({
+  onEquipment,
+  onMeasurements,
+}: DashboardProps) {
+  const [installation, setInstallation] =
+    useState<Installation>(() =>
+      InstallationService.load()
+    );
 
-  const [installationDialogOpen, setInstallationDialogOpen] =
-    useState(false);
+  const [latestMeasurement, setLatestMeasurement] =
+    useState(() =>
+      MeasurementService.latest()
+    );
 
-  const [weightDialogOpen, setWeightDialogOpen] =
-    useState(false);
+  const [
+    installationDialogOpen,
+    setInstallationDialogOpen,
+  ] = useState(false);
 
-  const [showInstallSaved, setShowInstallSaved] =
-    useState(false);
+  const [
+    weightDialogOpen,
+    setWeightDialogOpen,
+  ] = useState(false);
 
-  const [showWeightSaved, setShowWeightSaved] =
-    useState(false);
+  const [
+    showInstallSaved,
+    setShowInstallSaved,
+  ] = useState(false);
+
+  const [
+    showWeightSaved,
+    setShowWeightSaved,
+  ] = useState(false);
 
   const gas = calculateGas({
-    cylinderCapacityKg: installation.cylinderCapacityKg,
+    cylinderCapacityKg:
+      installation.cylinderCapacityKg,
 
     emptyCylinderWeightKg:
       installation.emptyCylinderWeightKg,
@@ -52,7 +75,9 @@ export default function Dashboard() {
     averageConsumptionKgPerHour: 0.55,
   });
 
-  function saveInstallation(newInstallation: Installation) {
+  function saveInstallation(
+    newInstallation: Installation
+  ) {
     InstallationService.save(newInstallation);
 
     setInstallation(newInstallation);
@@ -63,47 +88,54 @@ export default function Dashboard() {
   }
 
   function saveWeight(weight: number) {
-  const updatedInstallation: Installation = {
-    ...installation,
-    currentGrossWeightKg: weight,
-  };
- 
-  setLatestMeasurement(MeasurementService.latest());
+    const updatedInstallation: Installation = {
+      ...installation,
+      currentGrossWeightKg: weight,
+    };
 
-  const gas = calculateGas({
-    cylinderCapacityKg: updatedInstallation.cylinderCapacityKg,
+    const gas = calculateGas({
+      cylinderCapacityKg:
+        updatedInstallation.cylinderCapacityKg,
 
-    emptyCylinderWeightKg:
-      updatedInstallation.emptyCylinderWeightKg,
+      emptyCylinderWeightKg:
+        updatedInstallation.emptyCylinderWeightKg,
 
-    currentGrossWeightKg:
-      updatedInstallation.currentGrossWeightKg,
+      currentGrossWeightKg:
+        updatedInstallation.currentGrossWeightKg,
 
-    averageConsumptionKgPerHour: 0.55,
-  });
+      averageConsumptionKgPerHour: 0.55,
+    });
 
-  InstallationService.save(updatedInstallation);
+    InstallationService.save(
+      updatedInstallation
+    );
 
-  MeasurementService.save({
-    date: new Date(),
+    MeasurementService.save({
+      id: crypto.randomUUID(),
 
-    grossWeightKg: weight,
+      date: new Date(),
 
-    remainingLpgKg: gas.remainingLpgKg,
+      grossWeightKg: weight,
 
-    remainingPercent: gas.remainingPercent,
-  });
+      remainingLpgKg:
+        gas.remainingLpgKg,
 
-  setInstallation(updatedInstallation);
+      remainingPercent:
+        gas.remainingPercent,
+    });
 
-  setWeightDialogOpen(false);
+    setLatestMeasurement(
+      MeasurementService.latest()
+    );
 
-  setShowWeightSaved(true);
-}
+    setInstallation(
+      updatedInstallation
+    );
 
- const [latestMeasurement, setLatestMeasurement] = useState(
-  () => MeasurementService.latest()
-);
+    setWeightDialogOpen(false);
+
+    setShowWeightSaved(true);
+  }
 
   return (
     <div
@@ -112,7 +144,8 @@ export default function Dashboard() {
         background: "#1E1E1E",
         borderRadius: "18px",
         padding: "30px",
-        boxShadow: "0 0 25px rgba(0,0,0,0.5)",
+        boxShadow:
+          "0 0 25px rgba(0,0,0,0.5)",
       }}
     >
       <h1
@@ -124,29 +157,38 @@ export default function Dashboard() {
         GasGauge
       </h1>
 
-      <p
+      <div
         style={{
           textAlign: "center",
           color: "#AAAAAA",
+          marginBottom: "20px",
         }}
       >
-        Cylinder Installed:
-        <br />
-        {formatDate(installation.installDate)}
+        <div>
+          Cylinder Installed:
+        </div>
+
+        <div>
+          {formatDate(
+            installation.installDate
+          )}
+        </div>
+
         {latestMeasurement && (
-  <p
-    style={{
-      textAlign: "center",
-      color: "#AAAAAA",
-      marginTop: "-10px",
-      fontSize: "14px",
-    }}
-  >
-    Last Weight:{" "}
-    {latestMeasurement.grossWeightKg.toFixed(2)} kg
-  </p>
-)}
-      </p>
+          <div
+            style={{
+              marginTop: "8px",
+              fontSize: "14px",
+            }}
+          >
+            Last Weight{" "}
+            {latestMeasurement.grossWeightKg.toFixed(
+              2
+            )}{" "}
+            kg
+          </div>
+        )}
+      </div>
 
       <Button
         fullWidth
@@ -158,6 +200,30 @@ export default function Dashboard() {
       >
         Install New Cylinder
       </Button>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "20px",
+        }}
+      >
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={onEquipment}
+        >
+          Equipment
+        </Button>
+
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={onMeasurements}
+        >
+          Measurement History
+        </Button>
+      </div>
 
       <hr />
 
