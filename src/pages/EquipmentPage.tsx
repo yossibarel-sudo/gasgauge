@@ -15,7 +15,11 @@ import {
 import { EquipmentService } from "../services/EquipmentService";
 import type { Burner, BurnerUnit, Equipment } from "../models/Equipment";
 
-export default function EquipmentPage() {
+interface EquipmentPageProps {
+  onBack: () => void;
+}
+
+export default function EquipmentPage({ onBack, }: EquipmentPageProps) {
   const [equipment, setEquipment] = useState<Equipment>(
   () => EquipmentService.load()
 );
@@ -162,6 +166,21 @@ export default function EquipmentPage() {
 </Button>
         </CardContent>
       </Card>
+   <Box
+  sx={{
+    display: "flex",
+    justifyContent: "flex-end",
+    mt: 3,
+  }}
+>
+  <Button
+    variant="contained"
+    onClick={onBack}
+  >
+    Back to Dashboard
+  </Button>
+</Box>
+
     <Snackbar
   open={saved}
   autoHideDuration={3000}

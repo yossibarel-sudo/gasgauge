@@ -1,4 +1,6 @@
 export interface Installation {
+  id: string;
+  
   installDate: Date;
 
   cylinderCapacityKg: number;

@@ -107,8 +107,9 @@ export default function InstallationDialog({
 
         <Button
           variant="contained"
-          onClick={() => onSave(editedInstallation)}
+          onClick={() => onSave({ ...editedInstallation, id: crypto.randomUUID() })}
         >
+        
           Save
         </Button>
       </DialogActions>

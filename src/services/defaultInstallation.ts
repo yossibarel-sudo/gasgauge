@@ -1,6 +1,9 @@
 import type { Installation } from "../models/Installation";
 
 export const defaultInstallation: Installation = {
+  
+  id: crypto.randomUUID(),
+  
   installDate: new Date(),
 
   cylinderCapacityKg: 12,

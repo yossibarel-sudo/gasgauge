@@ -1,6 +1,8 @@
 export interface Measurement {
   id: string;
 
+  installationId: string;
+  
   date: Date;
 
   grossWeightKg: number;
@@ -8,8 +10,6 @@ export interface Measurement {
   remainingLpgKg: number;
 
   remainingPercent: number;
-
-  bbqHoursSincePrevious?: number;
 
   notes?: string;
 }

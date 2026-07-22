@@ -2,75 +2,87 @@ import { useState } from "react";
 
 import {
   Alert,
+  Box,
   Button,
+  Paper,
   Snackbar,
+  Table,
+  TableBody,
+  Typography,
 } from "@mui/material";
 
 import InstallationDialog from "../components/InstallationDialog";
 import WeightDialog from "../components/WeightDialog";
+import MetricCard from "../components/MetricCard";
+import InfoRow from "../components/InfoRow";
 
-import { calculateGas } from "../services/GasCalculationService";
 import { AnalysisService } from "../services/AnalysisService";
-import { EquipmentService } from "../services/EquipmentService";
 import { InstallationService } from "../services/InstallationService";
 import { MeasurementService } from "../services/MeasurementService";
+import { EquipmentService } from "../services/EquipmentService";
 
 import type { Installation } from "../models/Installation";
 
+
 interface DashboardProps {
+
   onEquipment: () => void;
+
   onMeasurements: () => void;
+
+  onBBQSessions: () => void;
+
 }
 
-function formatDate(date: Date): string {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
+
+
+function formatDate(
+  date: Date
+): string {
+
+  const day =
+    String(date.getDate())
+      .padStart(2, "0");
+
+  const month =
+    String(date.getMonth() + 1)
+      .padStart(2, "0");
+
+  const year =
+    date.getFullYear();
 
   return `${day}/${month}/${year}`;
 }
 
+
+
 export default function Dashboard({
+
   onEquipment,
+
   onMeasurements,
+
+  onBBQSessions,
+
 }: DashboardProps) {
 
+
   const [installation, setInstallation] =
-    useState<Installation>(() =>
-      InstallationService.load()
+    useState<Installation>(
+      () => InstallationService.load()
     );
 
-  const [latestMeasurement, setLatestMeasurement] =
-    useState(() =>
-      MeasurementService.latest()
+
+  const [measurements, setMeasurements] =
+    useState(
+      () => MeasurementService.load()
     );
 
-  const [
-    installationDialogOpen,
-    setInstallationDialogOpen,
-  ] = useState(false);
 
-  const [
-    weightDialogOpen,
-    setWeightDialogOpen,
-  ] = useState(false);
-
-  const [
-    showInstallSaved,
-    setShowInstallSaved,
-  ] = useState(false);
-
-  const [
-    showWeightSaved,
-    setShowWeightSaved,
-  ] = useState(false);
-
-
-  const measurements =
-    MeasurementService.load();
 
   const equipment =
     EquipmentService.load();
+
 
 
   const analysis =
@@ -81,14 +93,30 @@ export default function Dashboard({
     );
 
 
-  const cylinderAgeDays =
-    Math.floor(
-      (
-        new Date().getTime() -
-        installation.installDate.getTime()
-      ) /
-      (1000 * 60 * 60 * 24)
-    );
+
+  const [
+    installationDialogOpen,
+    setInstallationDialogOpen,
+  ] =
+    useState(false);
+
+
+
+  const [
+    weightDialogOpen,
+    setWeightDialogOpen,
+  ] =
+    useState(false);
+
+
+
+  const [
+    showSaved,
+    setShowSaved,
+  ] =
+    useState(false);
+
+
 
 
   function saveInstallation(
@@ -99,69 +127,73 @@ export default function Dashboard({
       newInstallation
     );
 
+
     setInstallation(
       newInstallation
     );
 
+
+    setShowSaved(true);
+
+
     setInstallationDialogOpen(false);
 
-    setShowInstallSaved(true);
   }
 
 
- function saveWeight(
-  weight: number,
-  bbqHours: number
-) {
 
-    const updatedInstallation: Installation = {
+
+  function saveWeight(
+    weight: number
+  ) {
+
+
+    const updatedInstallation =
+    {
       ...installation,
-      currentGrossWeightKg: weight,
+
+      currentGrossWeightKg:
+        weight,
     };
 
-
-    const gas =
-      calculateGas({
-        cylinderCapacityKg:
-          updatedInstallation.cylinderCapacityKg,
-
-        emptyCylinderWeightKg:
-          updatedInstallation.emptyCylinderWeightKg,
-
-        currentGrossWeightKg:
-          updatedInstallation.currentGrossWeightKg,
-
-        averageConsumptionKgPerHour: 0.55,
-      });
 
 
     InstallationService.save(
       updatedInstallation
     );
 
-MeasurementService.save({
-  id: crypto.randomUUID(),
-
-  date: new Date(),
-
-  grossWeightKg: weight,
-
-  remainingLpgKg:
-    gas.remainingLpgKg,
-
-  remainingPercent:
-    gas.remainingPercent,
-
-  bbqHoursSincePrevious:
-    bbqHours > 0
-      ? bbqHours
-      : undefined,
-});
 
 
-    setLatestMeasurement(
-      MeasurementService.latest()
-    );
+    const updatedAnalysis =
+      AnalysisService.analyze(
+        updatedInstallation,
+        equipment,
+        measurements
+      );
+
+
+
+    MeasurementService.save({
+
+      id: crypto.randomUUID(),
+
+      installationId:
+        installation.id,
+
+      date:
+        new Date(),
+
+      grossWeightKg:
+        weight,
+
+      remainingLpgKg:
+        updatedAnalysis.remainingLpgKg,
+
+      remainingPercent:
+        updatedAnalysis.remainingPercent,
+
+    });
+
 
 
     setInstallation(
@@ -169,88 +201,285 @@ MeasurementService.save({
     );
 
 
+    setMeasurements(
+      MeasurementService.load()
+    );
+
+
     setWeightDialogOpen(false);
 
-    setShowWeightSaved(true);
+
+    setShowSaved(true);
+
   }
+    return (
 
-
-  return (
-    <div
-      style={{
-        width: "420px",
-        background: "#1E1E1E",
-        borderRadius: "18px",
-        padding: "30px",
-        boxShadow:
-          "0 0 25px rgba(0,0,0,0.5)",
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 700,
+        mx: "auto",
+        mt: 3,
+        px: 2,
       }}
     >
 
-      <h1
-        style={{
-          textAlign: "center",
-          color: "#4CAF50",
+
+      <Typography
+        variant="h3"
+        align="center"
+        sx={{
+          color:"#4CAF50",
+          mb:1,
+          fontWeight:"bold",
         }}
       >
         GasGauge
-      </h1>
+      </Typography>
 
 
-      <div
-        style={{
-          textAlign: "center",
-          color: "#AAAAAA",
-          marginBottom: "20px",
+
+      <Typography
+        align="center"
+        sx={{
+          color:"#777",
+          mb:3,
         }}
       >
-
-        <div>
-          Cylinder Installed:
-        </div>
-
-        <div>
-          {formatDate(
-            installation.installDate
-          )}
-        </div>
-
-
-        {latestMeasurement && (
-          <div
-            style={{
-              marginTop: "8px",
-              fontSize: "14px",
-            }}
-          >
-            Last Weight{" "}
-            {latestMeasurement.grossWeightKg.toFixed(2)}
-            {" "}kg
-          </div>
+        Cylinder Installed:{" "}
+        {formatDate(
+          installation.installDate
         )}
-
-      </div>
-
-
-      <Button
-        fullWidth
-        variant="contained"
-        sx={{ mb: 2 }}
-        onClick={() =>
-          setInstallationDialogOpen(true)
-        }
-      >
-        Install New Cylinder
-      </Button>
+      </Typography>
 
 
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          marginBottom: "20px",
+
+      <Paper
+        sx={{
+          p:3,
+          mb:3,
+          textAlign:"center",
+          background:"#1E1E1E",
         }}
       >
+
+        <Typography
+          variant="h6"
+          color="text.secondary"
+        >
+          Remaining LPG
+        </Typography>
+
+
+        <Typography
+          sx={{
+            fontSize:"64px",
+            color:"#4CAF50",
+            fontWeight:"bold",
+          }}
+        >
+          {analysis.remainingPercent.toFixed(0)}%
+        </Typography>
+
+
+        <Typography
+          sx={{
+            fontSize:"28px",
+            color:"white",
+          }}
+        >
+          {analysis.remainingLpgKg.toFixed(2)} kg
+        </Typography>
+
+
+        <Typography
+          color="text.secondary"
+        >
+          Using{" "}
+          {
+            analysis.usingActualConsumption
+              ? "measured"
+              : "configured"
+          }
+          {" "}consumption
+        </Typography>
+
+      </Paper>
+
+
+
+      <Box
+        sx={{
+          display:"grid",
+          gridTemplateColumns:"repeat(2,1fr)",
+          gap:2,
+          mb:3,
+        }}
+      >
+
+        <MetricCard
+          title="Current Weight"
+          value={
+            `${installation.currentGrossWeightKg.toFixed(2)} kg`
+          }
+        />
+
+
+        <MetricCard
+          title="Cylinder Age"
+          value={
+            `${analysis.cylinderAgeDays} days`
+          }
+        />
+
+
+        <MetricCard
+          title="Measurements"
+          value={
+            measurements.length
+          }
+        />
+
+
+        <MetricCard
+          title="Status"
+          value={analysis.status}
+          valueColor={
+            analysis.status === "GOOD"
+              ? "#4CAF50"
+              : analysis.status === "LOW"
+              ? "#FFA726"
+              : "#F44336"
+          }
+        />
+
+      </Box>
+
+
+
+      {
+        analysis.status === "LOW" && (
+
+          <Alert
+            severity="warning"
+            sx={{mb:3}}
+          >
+            LPG level is getting low.
+          </Alert>
+
+        )
+      }
+
+
+
+      {
+        analysis.status === "CRITICAL" && (
+
+          <Alert
+            severity="error"
+            sx={{mb:3}}
+          >
+            LPG level is critical.
+          </Alert>
+
+        )
+      }
+
+
+
+
+      <Paper
+        sx={{
+          p:2,
+          mb:3,
+          background:"#1E1E1E",
+        }}
+      >
+
+        <Typography
+          variant="h6"
+          sx={{
+            color:"white",
+            mb:1,
+          }}
+        >
+          Cooking Prediction
+        </Typography>
+
+
+
+        <Table>
+
+          <TableBody>
+
+
+            <InfoRow
+              label="Remaining Cooking Hours"
+              value={
+                analysis.remainingHours !== null
+                  ? `${analysis.remainingHours.toFixed(1)} h`
+                  : "--"
+              }
+            />
+
+
+
+            <InfoRow
+              label="Remaining BBQ Sessions"
+              value={
+                analysis.remainingSessions !== null
+                  ? analysis.remainingSessions.toFixed(1)
+                  : "--"
+              }
+            />
+
+
+
+            <InfoRow
+              label="Configured Consumption"
+              value={
+                `${analysis.theoreticalKgPerHour.toFixed(3)} kg/h`
+              }
+            />
+
+
+
+            <InfoRow
+              label="Measured Consumption"
+              value={
+                analysis.actualKgPerHour !== null
+                  ? `${analysis.actualKgPerHour.toFixed(3)} kg/h`
+                  : "--"
+              }
+            />
+
+
+
+            <InfoRow
+              label="Total BBQ Hours"
+              value={
+                `${analysis.totalCookingHours.toFixed(1)} h`
+              }
+            />
+
+
+          </TableBody>
+
+        </Table>
+
+      </Paper>
+
+
+
+
+      <Box
+        sx={{
+          display:"flex",
+          gap:2,
+          mb:3,
+        }}
+      >
+
 
         <Button
           fullWidth
@@ -261,193 +490,56 @@ MeasurementService.save({
         </Button>
 
 
+
         <Button
           fullWidth
           variant="outlined"
           onClick={onMeasurements}
         >
-          Measurement History
+          History
         </Button>
 
-      </div>
-           <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "10px",
-          marginBottom: "20px",
-        }}
-      >
 
-        <div style={metricCardStyle}>
-          <div style={metricTitleStyle}>
-            Current Weight
-          </div>
-
-          <div style={metricValueStyle}>
-            {installation.currentGrossWeightKg.toFixed(2)} kg
-          </div>
-        </div>
-
-
-        <div style={metricCardStyle}>
-          <div style={metricTitleStyle}>
-            Last Measurement
-          </div>
-
-          <div style={metricValueStyle}>
-            {latestMeasurement
-              ? formatDate(latestMeasurement.date)
-              : "--"}
-          </div>
-        </div>
-
-
-        <div style={metricCardStyle}>
-          <div style={metricTitleStyle}>
-            Measurements
-          </div>
-
-          <div style={metricValueStyle}>
-            {measurements.length}
-          </div>
-        </div>
-
-
-        <div style={metricCardStyle}>
-          <div style={metricTitleStyle}>
-            Cylinder Age
-          </div>
-
-          <div style={metricValueStyle}>
-            {cylinderAgeDays} days
-          </div>
-        </div>
-
-      </div>
-
-
-      <hr />
-
-
-      <h2
-        style={{
-          textAlign: "center",
-          color: "white",
-        }}
-      >
-        Remaining LPG
-      </h2>
-
-
-      <div style={{ textAlign: "center" }}>
-
-        <h1
-          style={{
-            fontSize: "64px",
-            color: "#4CAF50",
-            marginBottom: 0,
-          }}
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={onBBQSessions}
         >
-          {analysis.remainingPercent.toFixed(0)}%
-        </h1>
+          BBQ Sessions
+        </Button>
 
 
-        <div
-          style={{
-            color: "white",
-            fontSize: "28px",
-          }}
-        >
-          {analysis.currentGasKg.toFixed(2)} kg
-        </div>
+      </Box>
 
 
-        <div
-          style={{
-            color: "#AAAAAA",
-          }}
-        >
-          of {installation.cylinderCapacityKg} kg
-        </div>
-
-      </div>
-
-
-      <hr />
-
-
-      <table
-        style={{
-          width: "100%",
-          color: "white",
-        }}
-      >
-
-        <tbody>
-
-          <tr>
-            <td>Current Weight</td>
-
-            <td align="right">
-              {installation.currentGrossWeightKg.toFixed(2)} kg
-            </td>
-          </tr>
-
-
-          <tr>
-            <td>Remaining BBQ Sessions</td>
-
-            <td align="right">
-              {analysis.estimatedRemainingSessions !== null
-                ? analysis.estimatedRemainingSessions.toFixed(1)
-                : "--"}
-            </td>
-          </tr>
-
-
-          <tr>
-            <td>Cooking Hours</td>
-
-            <td align="right">
-              {analysis.remainingHours !== null
-                ? analysis.remainingHours.toFixed(1)
-                : "--"}
-            </td>
-          </tr>
-
-
-          <tr>
-            <td>Status</td>
-
-            <td
-              align="right"
-              style={{
-                color: "#4CAF50",
-                fontWeight: "bold",
-              }}
-            >
-              {analysis.status}
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
 
 
       <Button
         fullWidth
-        size="large"
         variant="contained"
-        sx={{ mt: 3 }}
+        size="large"
+        sx={{mb:2}}
         onClick={() =>
           setWeightDialogOpen(true)
         }
       >
         Add Cylinder Weight
       </Button>
+
+
+
+      <Button
+        fullWidth
+        variant="contained"
+        size="large"
+        onClick={() =>
+          setInstallationDialogOpen(true)
+        }
+      >
+        Install New Cylinder
+      </Button>
+
+
 
 
       <InstallationDialog
@@ -458,6 +550,7 @@ MeasurementService.save({
         }
         onSave={saveInstallation}
       />
+
 
 
       <WeightDialog
@@ -472,69 +565,19 @@ MeasurementService.save({
       />
 
 
-      <Snackbar
-        open={showInstallSaved}
-        autoHideDuration={3000}
-        onClose={() =>
-          setShowInstallSaved(false)
-        }
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-      >
-
-        <Alert
-          severity="success"
-          variant="filled"
-        >
-          New cylinder installed.
-        </Alert>
-
-      </Snackbar>
-
 
       <Snackbar
-        open={showWeightSaved}
+        open={showSaved}
         autoHideDuration={3000}
         onClose={() =>
-          setShowWeightSaved(false)
+          setShowSaved(false)
         }
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-      >
-
-        <Alert
-          severity="success"
-          variant="filled"
-        >
-          Weight updated.
-        </Alert>
-
-      </Snackbar>
+        message="Data saved successfully"
+      />
 
 
-    </div>
+    </Box>
+
   );
+
 }
-
-
-const metricCardStyle = {
-  background: "#2A2A2A",
-  borderRadius: "10px",
-  padding: "12px",
-};
-
-
-const metricTitleStyle = {
-  color: "#AAAAAA",
-  fontSize: "13px",
-};
-
-
-const metricValueStyle = {
-  color: "white",
-  fontSize: "22px",
-};

@@ -2,48 +2,79 @@ import type { Equipment } from "../models/Equipment";
 import type { Installation } from "../models/Installation";
 import type { Measurement } from "../models/Measurement";
 
-export interface AnalysisResult {
-  currentGasKg: number;
+import { BBQSessionService } from "./BBQSessionService";
 
-  gasUsedKg: number;
+
+export interface AnalysisResult {
+
+  remainingLpgKg: number;
 
   remainingPercent: number;
 
-  status: "GOOD" | "LOW" | "CRITICAL";
+  gasUsedKg: number;
 
   theoreticalKgPerHour: number;
 
   actualKgPerHour: number | null;
 
+  effectiveKgPerHour: number;
+
+  usingActualConsumption: boolean;
+
+  efficiencyPercent: number | null;
+
   remainingHours: number | null;
 
-  estimatedRemainingSessions: number | null;
+  remainingSessions: number | null;
 
   cylinderAgeDays: number;
 
   totalCookingHours: number;
 
   averageSessionHours: number;
+
+  status: "GOOD" | "LOW" | "CRITICAL";
 }
 
+
+
 export class AnalysisService {
+
+
   static analyze(
+
     installation: Installation,
+
     equipment: Equipment,
-    measurements: Measurement[]
+
+    _measurements: Measurement[]
+
   ): AnalysisResult {
-    const currentGasKg =
-      installation.currentGrossWeightKg -
-      installation.emptyCylinderWeightKg;
+
+
+    const remainingLpgKg =
+      Math.max(
+        0,
+        installation.currentGrossWeightKg -
+        installation.emptyCylinderWeightKg
+      );
+
 
     const gasUsedKg =
-      installation.initialGrossWeightKg -
-      installation.currentGrossWeightKg;
+      Math.max(
+        0,
+        installation.initialGrossWeightKg -
+        installation.currentGrossWeightKg
+      );
+
 
     const remainingPercent =
-      (currentGasKg /
-        installation.cylinderCapacityKg) *
-      100;
+      installation.cylinderCapacityKg > 0
+        ? (remainingLpgKg /
+            installation.cylinderCapacityKg) * 100
+        : 0;
+
+
 
     const theoreticalKgPerHour =
       equipment.burners.reduce(
@@ -52,72 +83,127 @@ export class AnalysisService {
         0
       );
 
-    const cookingMeasurements =
-      measurements.filter(
-        (m) =>
-          m.bbqHoursSincePrevious !== undefined &&
-          m.bbqHoursSincePrevious > 0
+
+
+    const sessions =
+      BBQSessionService.loadForInstallation(
+        installation.id
       );
 
+
+
     const totalCookingHours =
-      cookingMeasurements.reduce(
-        (sum, m) =>
-          sum +
-          (m.bbqHoursSincePrevious ?? 0),
+      sessions.reduce(
+        (sum, session) =>
+          sum + session.durationHours,
         0
       );
 
+
+
     const averageSessionHours =
-      cookingMeasurements.length === 0
-        ? 0
-        : totalCookingHours /
-          cookingMeasurements.length;
+      sessions.length > 0
+        ? totalCookingHours / sessions.length
+        : 0;
+
+
 
     const actualKgPerHour =
       totalCookingHours > 0
         ? gasUsedKg / totalCookingHours
         : null;
 
+
+
+    const usingActualConsumption =
+      actualKgPerHour !== null &&
+      sessions.length >= 3;
+
+
+
+    const effectiveKgPerHour =
+      usingActualConsumption
+        ? actualKgPerHour!
+        : theoreticalKgPerHour;
+
+
+
     const remainingHours =
-      actualKgPerHour && actualKgPerHour > 0
-        ? currentGasKg / actualKgPerHour
+      effectiveKgPerHour > 0
+        ? remainingLpgKg / effectiveKgPerHour
         : null;
 
-    const estimatedRemainingSessions =
-      remainingHours &&
+
+
+    const remainingSessions =
+      remainingHours !== null &&
       averageSessionHours > 0
-        ? remainingHours /
-          averageSessionHours
+        ? remainingHours / averageSessionHours
         : null;
 
-    const cylinderAgeDays = Math.floor(
-      (Date.now() -
-        installation.installDate.getTime()) /
+
+
+    const efficiencyPercent =
+      actualKgPerHour !== null &&
+      theoreticalKgPerHour > 0
+        ? (actualKgPerHour /
+            theoreticalKgPerHour) * 100
+        : null;
+
+
+
+    const cylinderAgeDays =
+      Math.floor(
+        (Date.now() -
+          installation.installDate.getTime()) /
         (1000 * 60 * 60 * 24)
-    );
-let status: "GOOD" | "LOW" | "CRITICAL";
+      );
 
-if (remainingPercent > 40) {
-  status = "GOOD";
-} else if (remainingPercent > 20) {
-  status = "LOW";
-} else {
-  status = "CRITICAL";
-}
+
+
+    let status:
+      | "GOOD"
+      | "LOW"
+      | "CRITICAL";
+
+
+    if (remainingPercent > 40) {
+
+      status = "GOOD";
+
+    } else if (remainingPercent > 20) {
+
+      status = "LOW";
+
+    } else {
+
+      status = "CRITICAL";
+
+    }
+
+
+
     return {
-      currentGasKg,
 
-      gasUsedKg,
+      remainingLpgKg,
 
       remainingPercent,
+
+      gasUsedKg,
 
       theoreticalKgPerHour,
 
       actualKgPerHour,
 
+      effectiveKgPerHour,
+
+      usingActualConsumption,
+
+      efficiencyPercent,
+
       remainingHours,
 
-      estimatedRemainingSessions,
+      remainingSessions,
 
       cylinderAgeDays,
 
@@ -126,6 +212,9 @@ if (remainingPercent > 40) {
       averageSessionHours,
 
       status,
+
     };
+
   }
+
 }
