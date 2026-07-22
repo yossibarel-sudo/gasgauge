@@ -5,8 +5,6 @@ import EquipmentPage from "./pages/EquipmentPage";
 import MeasurementsPage from "./pages/MeasurementsPage";
 import BBQSessionsPage from "./pages/BBQSessionsPage";
 
-import { InstallationService } from "./services/InstallationService";
-
 
 type Page =
   | "dashboard"
@@ -15,26 +13,37 @@ type Page =
   | "bbqSessions";
 
 
+
 export default function App() {
 
-  const [page, setPage] =
-    useState<Page>("dashboard");
+
+  const [
+    page,
+    setPage,
+  ] =
+    useState<Page>(
+      "dashboard"
+    );
+
+
 
 
   if (page === "equipment") {
 
-  return (
+    return (
 
-    <EquipmentPage
+      <EquipmentPage
 
-      onBack={() =>
-        setPage("dashboard")
-      }
+        onBack={() =>
+          setPage("dashboard")
+        }
 
-    />
+      />
 
-  );
-}
+    );
+
+  }
+
 
 
 
@@ -51,23 +60,17 @@ export default function App() {
       />
 
     );
+
   }
+
 
 
 
   if (page === "bbqSessions") {
 
-    const installation =
-      InstallationService.load();
-
-
     return (
 
       <BBQSessionsPage
-
-        installationId={
-          installation.id
-        }
 
         onBack={() =>
           setPage("dashboard")
@@ -76,7 +79,9 @@ export default function App() {
       />
 
     );
+
   }
+
 
 
 

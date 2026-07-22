@@ -1,8 +1,7 @@
 import type { Equipment } from "../models/Equipment";
 import type { Installation } from "../models/Installation";
 import type { Measurement } from "../models/Measurement";
-
-import { BBQSessionService } from "./BBQSessionService";
+import type { BBQSession } from "../models/BBQSession";
 
 
 export interface AnalysisResult {
@@ -33,8 +32,12 @@ export interface AnalysisResult {
 
   averageSessionHours: number;
 
-  status: "GOOD" | "LOW" | "CRITICAL";
+  status:
+    | "GOOD"
+    | "LOW"
+    | "CRITICAL";
 }
+
 
 
 
@@ -47,10 +50,17 @@ export class AnalysisService {
 
     equipment: Equipment,
 
-    _measurements: Measurement[]
+    _measurements: Measurement[],
+
+    bbqSessions: BBQSession[]
 
   ): AnalysisResult {
 
+
+
+    //----------------------------------
+    // LPG remaining
+    //----------------------------------
 
     const remainingLpgKg =
       Math.max(
@@ -60,6 +70,11 @@ export class AnalysisService {
       );
 
 
+
+    //----------------------------------
+    // Gas consumed
+    //----------------------------------
+
     const gasUsedKg =
       Math.max(
         0,
@@ -68,98 +83,202 @@ export class AnalysisService {
       );
 
 
+
+    //----------------------------------
+    // Remaining percentage
+    //----------------------------------
+
     const remainingPercent =
       installation.cylinderCapacityKg > 0
-        ? (remainingLpgKg /
-            installation.cylinderCapacityKg) * 100
+
+        ? (
+            remainingLpgKg /
+            installation.cylinderCapacityKg
+          ) * 100
+
         : 0;
 
 
 
+
+    //----------------------------------
+    // Equipment consumption
+    //----------------------------------
+
     const theoreticalKgPerHour =
+
       equipment.burners.reduce(
+
         (sum, burner) =>
-          sum + burner.calculatedKgPerHour,
+
+          sum +
+          burner.calculatedKgPerHour,
+
         0
+
       );
 
 
 
-    const sessions =
-      BBQSessionService.loadForInstallation(
-        installation.id
-      );
+
+    //----------------------------------
+    // BBQ statistics
+    //----------------------------------
+
+    const installationSessions =
+
+  (bbqSessions ?? []).filter(
+
+    (session) =>
+
+      session.installationId ===
+      installation.id
+
+  );
 
 
 
     const totalCookingHours =
-      sessions.reduce(
+
+      installationSessions.reduce(
+
         (sum, session) =>
-          sum + session.durationHours,
+
+          sum +
+          session.durationHours,
+
         0
+
       );
 
 
 
     const averageSessionHours =
-      sessions.length > 0
-        ? totalCookingHours / sessions.length
+
+      installationSessions.length > 0
+
+        ? totalCookingHours /
+          installationSessions.length
+
         : 0;
 
 
 
+
+    //----------------------------------
+    // Actual consumption
+    //----------------------------------
+
     const actualKgPerHour =
+
       totalCookingHours > 0
-        ? gasUsedKg / totalCookingHours
+
+        ? gasUsedKg /
+          totalCookingHours
+
         : null;
 
 
 
+
+    //----------------------------------
+    // Select consumption source
+    //----------------------------------
+
     const usingActualConsumption =
-      actualKgPerHour !== null &&
-      sessions.length >= 3;
+
+      actualKgPerHour !== null;
 
 
 
     const effectiveKgPerHour =
+
       usingActualConsumption
-        ? actualKgPerHour!
+
+        ? actualKgPerHour
+
         : theoreticalKgPerHour;
 
 
 
+
+    //----------------------------------
+    // Remaining prediction
+    //----------------------------------
+
     const remainingHours =
+
       effectiveKgPerHour > 0
-        ? remainingLpgKg / effectiveKgPerHour
+
+        ? remainingLpgKg /
+          effectiveKgPerHour
+
         : null;
+
 
 
 
     const remainingSessions =
+
       remainingHours !== null &&
       averageSessionHours > 0
-        ? remainingHours / averageSessionHours
+
+        ? remainingHours /
+          averageSessionHours
+
         : null;
 
 
+
+
+    //----------------------------------
+    // Efficiency
+    //----------------------------------
 
     const efficiencyPercent =
+
       actualKgPerHour !== null &&
       theoreticalKgPerHour > 0
-        ? (actualKgPerHour /
-            theoreticalKgPerHour) * 100
+
+        ? (
+            actualKgPerHour /
+            theoreticalKgPerHour
+          ) * 100
+
         : null;
 
 
 
+
+    //----------------------------------
+    // Cylinder age
+    //----------------------------------
+
     const cylinderAgeDays =
+
       Math.floor(
-        (Date.now() -
-          installation.installDate.getTime()) /
-        (1000 * 60 * 60 * 24)
+
+        (
+          Date.now() -
+          installation.installDate.getTime()
+
+        ) /
+
+        (
+          1000 *
+          60 *
+          60 *
+          24
+        )
+
       );
 
 
+
+
+    //----------------------------------
+    // Status
+    //----------------------------------
 
     let status:
       | "GOOD"
@@ -167,19 +286,25 @@ export class AnalysisService {
       | "CRITICAL";
 
 
+
     if (remainingPercent > 40) {
 
       status = "GOOD";
 
-    } else if (remainingPercent > 20) {
+    }
+
+    else if (remainingPercent > 20) {
 
       status = "LOW";
 
-    } else {
+    }
+
+    else {
 
       status = "CRITICAL";
 
     }
+
 
 
 

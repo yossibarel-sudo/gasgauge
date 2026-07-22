@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   Box,
   Button,
@@ -14,17 +16,20 @@ import {
 
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import {
-  useState,
-} from "react";
+import BBQSessionDialog from "../components/BBQSessionDialog";
 
-import {
-  BBQSessionService,
-} from "../services/BBQSessionService";
+import { BBQSessionService } from "../services/BBQSessionService";
+import { InstallationService } from "../services/InstallationService";
 
-import type {
-  BBQSession,
-} from "../models/BBQSession";
+import type { BBQSession } from "../models/BBQSession";
+
+
+
+interface BBQSessionsPageProps {
+
+  onBack: () => void;
+
+}
 
 
 
@@ -33,31 +38,17 @@ function formatDate(
 ): string {
 
   const day =
-    String(
-      date.getDate()
-    ).padStart(2,"0");
-
+    String(date.getDate())
+      .padStart(2, "0");
 
   const month =
-    String(
-      date.getMonth()+1
-    ).padStart(2,"0");
-
+    String(date.getMonth() + 1)
+      .padStart(2, "0");
 
   const year =
     date.getFullYear();
 
-
   return `${day}/${month}/${year}`;
-}
-
-
-
-interface Props {
-
-  installationId:string;
-
-  onBack:()=>void;
 
 }
 
@@ -65,207 +56,328 @@ interface Props {
 
 export default function BBQSessionsPage({
 
-  installationId,
-
   onBack,
 
-}:Props){
+}: BBQSessionsPageProps) {
 
 
-const [
-sessions,
-setSessions,
-]=useState<BBQSession[]>(
-()=>BBQSessionService
-.loadForInstallation(
-installationId
-)
-);
 
+  const installation =
+    InstallationService.load();
 
 
-function deleteSession(
-id:string
-){
 
-if(
-!window.confirm(
-"Delete BBQ session?"
-)
-){
-return;
-}
+  const [
+    sessions,
+    setSessions,
+  ] =
+    useState<BBQSession[]>(
+      () =>
+        BBQSessionService
+          .loadForInstallation(
+            installation.id
+          )
+    );
 
 
-BBQSessionService.delete(id);
 
+  const [
+    dialogOpen,
+    setDialogOpen,
+  ] =
+    useState(false);
 
-setSessions(
-BBQSessionService
-.loadForInstallation(
-installationId
-)
-);
 
-}
 
 
+  function saveSession(
+    session: BBQSession
+  ) {
 
-return (
+    BBQSessionService.save(
+      session
+    );
 
-<Box
-sx={{
-maxWidth:900,
-mx:"auto",
-mt:4,
-}}
->
 
+    setSessions(
+      BBQSessionService
+        .loadForInstallation(
+          installation.id
+        )
+    );
 
-<Typography
-variant="h4"
-gutterBottom
->
-BBQ Sessions
-</Typography>
 
+    setDialogOpen(false);
 
+  }
 
-<Card>
 
-<CardContent>
 
 
-{
-sessions.length===0 ?
+  function deleteSession(
+    id: string
+  ) {
 
-<Typography
-color="text.secondary"
->
-No BBQ sessions recorded.
-</Typography>
+    if (
+      !window.confirm(
+        "Delete this BBQ session?"
+      )
+    ) {
 
+      return;
 
-:
+    }
 
-<Table>
 
-<TableHead>
+    BBQSessionService.delete(
+      id
+    );
 
-<TableRow>
 
-<TableCell>
-Date
-</TableCell>
+    setSessions(
+      BBQSessionService
+        .loadForInstallation(
+          installation.id
+        )
+    );
 
-<TableCell align="right">
-Duration (h)
-</TableCell>
+  }
 
-<TableCell>
-Notes
-</TableCell>
 
-<TableCell>
-Delete
-</TableCell>
 
-</TableRow>
 
-</TableHead>
+  return (
 
+    <Box
+      sx={{
+        maxWidth:900,
+        mx:"auto",
+        mt:4,
+      }}
+    >
 
-<TableBody>
 
-{
-sessions.map(
-(session)=>(
+      <Typography
+        variant="h4"
+        gutterBottom
+      >
+        BBQ Sessions
+      </Typography>
 
-<TableRow
-key={session.id}
->
 
-<TableCell>
-{
-formatDate(
-session.date
-)
-}
-</TableCell>
 
+      <Card>
 
-<TableCell align="right">
+        <CardContent>
 
-{
-session.durationHours
-.toFixed(1)
-}
 
-</TableCell>
+          <Box
+            sx={{
+              display:"flex",
+              justifyContent:"flex-end",
+              mb:2,
+            }}
+          >
 
+            <Button
+              variant="contained"
+              onClick={() =>
+                setDialogOpen(true)
+              }
+            >
+              Add BBQ Session
+            </Button>
 
-<TableCell>
-{
-session.notes
-}
+          </Box>
 
-</TableCell>
 
 
-<TableCell>
 
-<IconButton
-color="error"
-onClick={()=>
-deleteSession(
-session.id
-)
-}
->
+          {
+            sessions.length === 0 ? (
 
-<DeleteIcon/>
+              <Typography
+                color="text.secondary"
+                sx={{py:4}}
+              >
+                No BBQ sessions recorded yet.
+              </Typography>
 
-</IconButton>
 
+            ) : (
 
-</TableCell>
 
+              <Table>
 
-</TableRow>
 
-)
-)
-}
+                <TableHead>
 
+                  <TableRow>
 
-</TableBody>
+                    <TableCell>
+                      Date
+                    </TableCell>
 
-</Table>
 
-}
+                    <TableCell align="right">
+                      Duration (h)
+                    </TableCell>
 
-<Box
-  sx={{
-    display:"flex",
-    justifyContent:"flex-end",
-    mt:3,
-  }}
->
-  <Button
-    variant="contained"
-    onClick={onBack}
-  >
-    Back to Dashboard
-  </Button>
-</Box>
 
-</CardContent>
+                    <TableCell>
+                      Notes
+                    </TableCell>
 
-</Card>
 
+                    <TableCell align="center">
+                      Delete
+                    </TableCell>
 
-</Box>
 
-);
+                  </TableRow>
+
+
+                </TableHead>
+
+
+
+                <TableBody>
+
+
+                  {
+                    sessions.map(
+                      (session) => (
+
+                        <TableRow
+                          key={
+                            session.id
+                          }
+                        >
+
+
+                          <TableCell>
+
+                            {
+                              formatDate(
+                                session.date
+                              )
+                            }
+
+                          </TableCell>
+
+
+
+                          <TableCell align="right">
+
+                            {
+                              session.durationHours
+                                .toFixed(2)
+                            }
+
+                          </TableCell>
+
+
+
+                          <TableCell>
+
+                            {
+                              session.notes || "-"
+                            }
+
+                          </TableCell>
+
+
+
+                          <TableCell align="center">
+
+                            <IconButton
+
+                              color="error"
+
+                              onClick={() =>
+                                deleteSession(
+                                  session.id
+                                )
+                              }
+
+                            >
+
+                              <DeleteIcon />
+
+                            </IconButton>
+
+
+                          </TableCell>
+
+
+                        </TableRow>
+
+                      )
+                    )
+                  }
+
+
+                </TableBody>
+
+
+              </Table>
+
+
+            )
+          }
+
+
+
+
+          <Box
+            sx={{
+              display:"flex",
+              justifyContent:"flex-end",
+              mt:3,
+            }}
+          >
+
+            <Button
+              variant="contained"
+              onClick={onBack}
+            >
+              Back to Dashboard
+            </Button>
+
+
+          </Box>
+
+
+
+        </CardContent>
+
+      </Card>
+
+
+
+
+
+      <BBQSessionDialog
+
+        open={dialogOpen}
+
+        installationId={
+          installation.id
+        }
+
+        onCancel={() =>
+          setDialogOpen(false)
+        }
+
+        onSave={
+          saveSession
+        }
+
+      />
+
+
+    </Box>
+
+  );
 
 }

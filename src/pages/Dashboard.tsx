@@ -17,6 +17,7 @@ import MetricCard from "../components/MetricCard";
 import InfoRow from "../components/InfoRow";
 
 import { AnalysisService } from "../services/AnalysisService";
+import { BBQSessionService } from "../services/BBQSessionService";
 import { InstallationService } from "../services/InstallationService";
 import { MeasurementService } from "../services/MeasurementService";
 import { EquipmentService } from "../services/EquipmentService";
@@ -78,7 +79,8 @@ export default function Dashboard({
       () => MeasurementService.load()
     );
 
-
+const bbqSessions =
+  BBQSessionService.load();
 
   const equipment =
     EquipmentService.load();
@@ -86,11 +88,12 @@ export default function Dashboard({
 
 
   const analysis =
-    AnalysisService.analyze(
-      installation,
-      equipment,
-      measurements
-    );
+  AnalysisService.analyze(
+    installation,
+    equipment,
+    measurements,
+    bbqSessions
+  );
 
 
 
@@ -165,11 +168,12 @@ export default function Dashboard({
 
 
     const updatedAnalysis =
-      AnalysisService.analyze(
-        updatedInstallation,
-        equipment,
-        measurements
-      );
+  AnalysisService.analyze(
+    updatedInstallation,
+    equipment,
+    measurements,
+    bbqSessions
+  );
 
 
 
