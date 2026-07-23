@@ -10,7 +10,8 @@ import {
 
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-
+import { AnalysisService } from "../services/AnalysisService";
+import { EquipmentService } from "../services/EquipmentService";
 import type { Installation } from "../models/Installation";
 
 import { BBQSessionService } from "../services/BBQSessionService";
@@ -84,7 +85,38 @@ export default function BBQSessionControl({
   const [burnersUsed, setBurnersUsed] =
     useState(1);
 
+const equipment = EquipmentService.load();
 
+const analysis = AnalysisService.analyze(
+  installation,
+  equipment,
+  []
+);
+
+const estimatedGasUsed =
+  activeSession &&
+  analysis.effectiveKgPerHour !== null
+    ? analysis.effectiveKgPerHour *
+      (
+        (Date.now() -
+          activeSession.startTime!.getTime()) /
+        (1000 * 60 * 60)
+      )
+    : 0;
+
+const estimatedRemaining =
+  Math.max(
+    0,
+    analysis.remainingLpgKg -
+      estimatedGasUsed
+  );
+
+const estimatedRemainingHours =
+  analysis.effectiveKgPerHour !== null &&
+  analysis.effectiveKgPerHour > 0
+    ? estimatedRemaining /
+      analysis.effectiveKgPerHour
+    : null;
 
   useEffect(() => {
 
@@ -227,8 +259,31 @@ export default function BBQSessionControl({
             {elapsed}
           </Typography>
 
+<Typography>
+  Estimated gas used:
+  {" "}
+  {estimatedGasUsed.toFixed(2)} kg
+</Typography>
 
+<Typography
+  sx={{
+    mb:2,
+  }}
+>
+  Estimated remaining:
+  {" "}
+  {estimatedRemaining.toFixed(2)} kg
+</Typography>
 
+<Typography sx={{ mb: 2 }}>
+  Estimated cooking time left:
+  {" "}
+  {
+    estimatedRemainingHours !== null
+      ? `${estimatedRemainingHours.toFixed(1)} h`
+      : "--"
+  }
+</Typography>
 
           <Box
             sx={{
