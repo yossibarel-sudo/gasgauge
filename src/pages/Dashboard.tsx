@@ -11,13 +11,13 @@ import {
   Typography,
 } from "@mui/material";
 
+import BBQSessionControl from "../components/BBQSessionControl";
 import InstallationDialog from "../components/InstallationDialog";
 import WeightDialog from "../components/WeightDialog";
 import MetricCard from "../components/MetricCard";
 import InfoRow from "../components/InfoRow";
 
 import { AnalysisService } from "../services/AnalysisService";
-import { BBQSessionService } from "../services/BBQSessionService";
 import { InstallationService } from "../services/InstallationService";
 import { MeasurementService } from "../services/MeasurementService";
 import { EquipmentService } from "../services/EquipmentService";
@@ -79,8 +79,7 @@ export default function Dashboard({
       () => MeasurementService.load()
     );
 
-const bbqSessions =
-  BBQSessionService.load();
+
 
   const equipment =
     EquipmentService.load();
@@ -92,7 +91,6 @@ const bbqSessions =
     installation,
     equipment,
     measurements,
-    bbqSessions
   );
 
 
@@ -172,8 +170,7 @@ const bbqSessions =
     updatedInstallation,
     equipment,
     measurements,
-    bbqSessions
-  );
+    );
 
 
 
@@ -296,21 +293,19 @@ const bbqSessions =
         </Typography>
 
 
-        <Typography
-          color="text.secondary"
-        >
-          Using{" "}
-          {
-            analysis.usingActualConsumption
-              ? "measured"
-              : "configured"
-          }
-          {" "}consumption
-        </Typography>
+        <Typography color="text.secondary">
+  {
+    analysis.usingActualConsumption
+      ? `Using learned consumption (${analysis.actualKgPerHour!.toFixed(3)} kg/h)`
+      : "Using configured burner consumption"
+  }
+</Typography>
 
       </Paper>
 
-
+      <BBQSessionControl
+        installation={installation}
+      />
 
       <Box
         sx={{
@@ -388,8 +383,6 @@ const bbqSessions =
 
         )
       }
-
-
 
 
       <Paper

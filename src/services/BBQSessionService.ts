@@ -1,6 +1,13 @@
 import type { BBQSession } from "../models/BBQSession";
 
-const STORAGE_KEY = "gasgauge-bbq-sessions";
+
+const STORAGE_KEY =
+  "gasgauge-bbq-sessions";
+
+
+const ACTIVE_KEY =
+  "gasgauge-active-bbq-session";
+
 
 
 export class BBQSessionService {
@@ -19,71 +26,79 @@ export class BBQSessionService {
     }
 
 
-    const sessions =
-      JSON.parse(json) as BBQSession[];
+    return (
+      JSON.parse(json) as BBQSession[]
+    )
+    .map((session) => ({
+      ...session,
 
+      date:
+        new Date(session.date),
 
-    return sessions
-      .map((session) => ({
-        ...session,
+      startTime:
+        session.startTime
+          ? new Date(session.startTime)
+          : undefined,
 
-        date:
-          new Date(session.date),
-      }))
-      .sort(
-        (a, b) =>
-          b.date.getTime() -
-          a.date.getTime()
-      );
+      endTime:
+        session.endTime
+          ? new Date(session.endTime)
+          : undefined,
+    }))
+    .sort(
+      (a,b)=>
+        b.date.getTime()
+        -
+        a.date.getTime()
+    );
+
   }
+
+
 
 
 
   static loadForInstallation(
-    installationId: string
+    installationId:string
   ): BBQSession[] {
 
     return this.load()
       .filter(
-        (session) =>
-          session.installationId ===
-          installationId
+        session =>
+          session.installationId === installationId
       );
+
   }
+
+
 
 
 
   static save(
     session: BBQSession
-  ): void {
+  ):void {
 
     const sessions =
       this.load();
 
 
-    sessions.push(
-      session
-    );
-
-
-    sessions.sort(
-      (a, b) =>
-        b.date.getTime() -
-        a.date.getTime()
-    );
+    sessions.push(session);
 
 
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(sessions)
     );
+
   }
 
 
 
+
+
   static delete(
-    id: string
-  ): void {
+    id:string
+  ):void {
 
     const sessions =
       this.load();
@@ -91,7 +106,7 @@ export class BBQSessionService {
 
     const updated =
       sessions.filter(
-        (session) =>
+        session =>
           session.id !== id
       );
 
@@ -100,34 +115,170 @@ export class BBQSessionService {
       STORAGE_KEY,
       JSON.stringify(updated)
     );
+
   }
 
 
 
-  static latest():
+
+
+  static getActiveSession():
     BBQSession | null {
 
-    const sessions =
-      this.load();
+
+    const json =
+      localStorage.getItem(
+        ACTIVE_KEY
+      );
 
 
-    if (
-      sessions.length === 0
-    ) {
+    if (!json) {
       return null;
     }
 
 
-    return sessions[0];
+    const session =
+      JSON.parse(json);
+
+
+    return {
+      ...session,
+
+      date:
+        new Date(session.date),
+
+      startTime:
+        new Date(session.startTime),
+
+    };
+
   }
 
 
 
-  static clear(): void {
+
+
+  static startSession(
+    installationId:string
+  ):BBQSession {
+
+
+    const now =
+      new Date();
+
+
+    const session:BBQSession =
+    {
+
+      id:
+        crypto.randomUUID(),
+
+      installationId,
+
+      date:
+        now,
+
+      startTime:
+        now,
+
+      durationHours:
+        0,
+
+      burnersUsed:
+        1,
+
+    };
+
+
+    localStorage.setItem(
+      ACTIVE_KEY,
+      JSON.stringify(session)
+    );
+
+
+    return session;
+
+  }
+
+
+
+
+
+  static finishSession(
+    burnersUsed:number
+  ):BBQSession|null {
+
+
+    const active =
+      this.getActiveSession();
+
+
+    if (!active) {
+      return null;
+    }
+
+
+    const end =
+      new Date();
+
+
+    const duration =
+      (
+        end.getTime()
+        -
+        active.startTime!.getTime()
+
+      )
+      /
+      (1000*60*60);
+
+
+
+    const finished:BBQSession =
+    {
+
+      ...active,
+
+      endTime:
+        end,
+
+      durationHours:
+        duration,
+
+      burnersUsed,
+
+    };
+
+
+    this.save(
+      finished
+    );
+
+
+    localStorage.removeItem(
+      ACTIVE_KEY
+    );
+
+
+    return finished;
+
+  }
+
+
+
+
+
+  static clear():void {
 
     localStorage.removeItem(
       STORAGE_KEY
     );
+
+    localStorage.removeItem(
+      ACTIVE_KEY
+    );
+
   }
+
 
 }

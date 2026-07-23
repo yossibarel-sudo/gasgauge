@@ -1,4 +1,5 @@
 export interface BBQSession {
+
   id: string;
 
   /**
@@ -6,18 +7,40 @@ export interface BBQSession {
    */
   installationId: string;
 
+
   /**
-   * Date when the BBQ session occurred.
+   * Session date (kept for history compatibility).
    */
   date: Date;
+
+
+  /**
+   * BBQ start timestamp.
+   */
+  startTime?: Date;
+
+
+  /**
+   * BBQ end timestamp.
+   */
+  endTime?: Date;
+
 
   /**
    * Actual cooking duration in hours.
    */
   durationHours: number;
 
+
   /**
-   * Optional user notes.
+   * Number of burners used.
+   */
+  burnersUsed?: number;
+
+
+  /**
+   * Optional notes.
    */
   notes?: string;
+
 }

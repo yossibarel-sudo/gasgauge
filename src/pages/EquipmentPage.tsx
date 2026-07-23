@@ -13,105 +13,197 @@ import {
   Typography,
 } from "@mui/material";
 
-import { EquipmentService } from "../services/EquipmentService";
-
 import type {
   Burner,
   BurnerUnit,
   Equipment,
 } from "../models/Equipment";
 
+import { EquipmentService } from "../services/EquipmentService";
+import { BurnerCalculationService } from "../services/BurnerCalculationService";
+
+
 interface EquipmentPageProps {
   onBack: () => void;
 }
 
+
 export default function EquipmentPage({
   onBack,
 }: EquipmentPageProps) {
+
+
   const [equipment, setEquipment] =
     useState<Equipment>(
       () => EquipmentService.load()
     );
 
+
   const [saved, setSaved] =
     useState(false);
+
+
 
   function updateEquipment(
     field: keyof Equipment,
     value: string | number
   ) {
-    setEquipment((prev) => ({
-      ...prev,
+
+    setEquipment({
+      ...equipment,
       [field]: value,
-    }));
+    });
+
   }
+
+
 
   function updateBurner(
     index: number,
     field: keyof Burner,
     value: string | number
   ) {
-    const burners = [...equipment.burners];
 
-    burners[index] = {
+    const burners =
+      [...equipment.burners];
+
+
+    const updatedBurner: Burner =
+    {
       ...burners[index],
       [field]: value,
     };
 
+
+    updatedBurner.calculatedKgPerHour =
+      BurnerCalculationService.calculateKgPerHour(
+        Number(updatedBurner.value),
+        updatedBurner.unit
+      );
+
+
+    burners[index] =
+      updatedBurner;
+
+
     setEquipment({
+
       ...equipment,
+
       burners,
+
     });
+
   }
 
+
+
+
   function addBurner() {
-    if (equipment.burners.length >= 6) {
+
+    if (
+      equipment.burners.length >= 6
+    ) {
       return;
     }
 
-    const burnerNumber =
+
+    const id =
       equipment.burners.length + 1;
 
-    const newBurner: Burner = {
-      id: burnerNumber,
-      name: `Main Burner ${burnerNumber}`,
-      value: 3.5,
-      unit: "kW",
-      calculatedKgPerHour: 0.255,
+
+    const newBurner: Burner =
+    {
+      id,
+
+      name:
+        `Main Burner ${id}`,
+
+      value:
+        3.5,
+
+      unit:
+        "kW",
+
+      calculatedKgPerHour:
+        BurnerCalculationService.calculateKgPerHour(
+          3.5,
+          "kW"
+        ),
     };
 
+
     setEquipment({
+
       ...equipment,
-      burners: [
+
+      burners:
+      [
         ...equipment.burners,
         newBurner,
       ],
+
     });
+
   }
 
-  function removeBurner(id: number) {
-    if (equipment.burners.length <= 1) {
+
+
+
+
+  function removeBurner(
+    id: number
+  ) {
+
+    if (
+      equipment.burners.length <= 1
+    ) {
       return;
     }
 
+
     setEquipment({
+
       ...equipment,
+
       burners:
         equipment.burners.filter(
           (burner) =>
             burner.id !== id
         ),
+
     });
+
   }
 
+
+
+  function saveEquipment() {
+
+    EquipmentService.save(
+      equipment
+    );
+
+    setSaved(true);
+
+  }
+
+
+
   return (
+
     <Box
+
       sx={{
-        maxWidth: 900,
-        mx: "auto",
-        mt: 4,
+        maxWidth:700,
+        mx:"auto",
+        mt:3,
+        px:2,
       }}
+
     >
+
+
       <Typography
         variant="h4"
         gutterBottom
@@ -119,15 +211,21 @@ export default function EquipmentPage({
         Equipment Setup
       </Typography>
 
+
+
       <Card>
+
         <CardContent>
+
 
           <TextField
             fullWidth
             margin="normal"
             label="Manufacturer"
-            value={equipment.manufacturer}
-            onChange={(e) =>
+            value={
+              equipment.manufacturer
+            }
+            onChange={(e)=>
               updateEquipment(
                 "manufacturer",
                 e.target.value
@@ -135,18 +233,24 @@ export default function EquipmentPage({
             }
           />
 
+
+
           <TextField
             fullWidth
             margin="normal"
             label="Model"
-            value={equipment.model}
-            onChange={(e) =>
+            value={
+              equipment.model
+            }
+            onChange={(e)=>
               updateEquipment(
                 "model",
                 e.target.value
               )
             }
           />
+
+
 
           <TextField
             fullWidth
@@ -156,7 +260,7 @@ export default function EquipmentPage({
             value={
               equipment.defaultSessionDurationMinutes
             }
-            onChange={(e) =>
+            onChange={(e)=>
               updateEquipment(
                 "defaultSessionDurationMinutes",
                 Number(e.target.value)
@@ -164,204 +268,298 @@ export default function EquipmentPage({
             }
           />
 
-          <Divider sx={{ my: 3 }} />
+
+
+          <Divider
+            sx={{
+              my:3,
+            }}
+          />
+
+
 
           <Typography
             variant="h6"
-            gutterBottom
           >
             Burners
           </Typography>
+                    {
+            equipment.burners.map(
+              (burner, index) => (
 
-          {equipment.burners.map(
-            (burner, index) => (
-              <Card
-                key={burner.id}
-                variant="outlined"
-                sx={{
-                  mb: 2,
-                  p: 2,
-                }}
-              >
-                <Box
+                <Card
+                  key={burner.id}
+                  variant="outlined"
                   sx={{
-                    display: "flex",
-                    justifyContent:
-                      "space-between",
-                    alignItems: "center",
-                    mb: 1,
+                    mt:2,
+                    p:2,
                   }}
                 >
-                  <Typography
-                    variant="subtitle1"
+
+                  <Box
+                    sx={{
+                      display:"flex",
+                      justifyContent:"space-between",
+                      alignItems:"center",
+                    }}
                   >
-                    Burner {burner.id}
-                  </Typography>
 
-                  {equipment.burners.length >
-                    1 && (
-                    <Button
-                      color="error"
-                      onClick={() =>
-                        removeBurner(
-                          burner.id
-                        )
-                      }
+                    <Typography
+                      variant="subtitle1"
                     >
-                      Remove
-                    </Button>
-                  )}
-                </Box>
+                      Burner {burner.id}
+                    </Typography>
 
-                <TextField
-                  fullWidth
-                  margin="normal"
-                  label="Name"
-                  value={burner.name}
-                  onChange={(e) =>
-                    updateBurner(
-                      index,
-                      "name",
-                      e.target.value
-                    )
-                  }
-                />
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 2,
-                  }}
-                >
+                    {
+                      equipment.burners.length > 1 && (
+
+                        <Button
+                          color="error"
+                          onClick={() =>
+                            removeBurner(
+                              burner.id
+                            )
+                          }
+                        >
+                          Remove
+                        </Button>
+
+                      )
+                    }
+
+                  </Box>
+
+
+
                   <TextField
-                    type="number"
-                    label="Value"
-                    value={burner.value}
-                    onChange={(e) =>
+                    fullWidth
+                    margin="normal"
+                    label="Name"
+                    value={
+                      burner.name
+                    }
+                    onChange={(e)=>
                       updateBurner(
                         index,
-                        "value",
-                        Number(
-                          e.target.value
-                        )
+                        "name",
+                        e.target.value
                       )
                     }
                   />
 
-                  <TextField
-                    select
-                    label="Unit"
-                    value={burner.unit}
-                    onChange={(e) =>
-                      updateBurner(
-                        index,
-                        "unit",
-                        e.target
-                          .value as BurnerUnit
-                      )
-                    }
+
+
+                  <Box
+                    sx={{
+                      display:"flex",
+                      gap:2,
+                    }}
                   >
-                    {[
-                      "W",
-                      "kW",
-                      "BTU/h",
-                      "kg/h",
-                      "g/h",
-                    ].map((unit) => (
-                      <MenuItem
-                        key={unit}
-                        value={unit}
-                      >
-                        {unit}
-                      </MenuItem>
-                    ))}
-                  </TextField>
 
-                </Box>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Value"
+                      value={
+                        burner.value
+                      }
+                      onChange={(e)=>
+                        updateBurner(
+                          index,
+                          "value",
+                          Number(
+                            e.target.value
+                          )
+                        )
+                      }
+                    />
 
-              </Card>
+
+
+                    <TextField
+                      fullWidth
+                      select
+                      label="Unit"
+                      value={
+                        burner.unit
+                      }
+                      onChange={(e)=>
+                        updateBurner(
+                          index,
+                          "unit",
+                          e.target.value as BurnerUnit
+                        )
+                      }
+                    >
+
+                      {
+                        [
+                          "W",
+                          "kW",
+                          "BTU/h",
+                          "kg/h",
+                          "g/h",
+                        ].map(
+                          (unit) => (
+
+                            <MenuItem
+                              key={unit}
+                              value={unit}
+                            >
+                              {unit}
+                            </MenuItem>
+
+                          )
+                        )
+                      }
+
+                    </TextField>
+
+
+                  </Box>
+
+
+
+
+                  <Typography
+                    sx={{
+                      mt:1,
+                      fontWeight:"bold",
+                    }}
+                  >
+
+                    Consumption:
+                    {" "}
+                    {
+                      burner.calculatedKgPerHour.toFixed(3)
+                    }
+                    {" kg/h"}
+
+                  </Typography>
+
+
+                </Card>
+
+              )
             )
-          )}
-                    <Box
+          }
+
+
+
+
+
+          <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              mt: 2,
-              mb: 3,
+              mt:3,
+              display:"flex",
+              justifyContent:"space-between",
+              alignItems:"center",
             }}
           >
+
             <Button
               variant="outlined"
-              onClick={addBurner}
               disabled={
                 equipment.burners.length >= 6
+              }
+              onClick={
+                addBurner
               }
             >
               Add Burner
             </Button>
 
+
             <Typography
               color="text.secondary"
-              sx={{ alignSelf: "center" }}
             >
-              {equipment.burners.length} / 6 burners
+              {
+                equipment.burners.length
+              }
+              /6 burners
             </Typography>
+
+
           </Box>
 
-          <Divider sx={{ mb: 3 }} />
+
+
+
+          <Divider
+            sx={{
+              my:3,
+            }}
+          />
+
+
+
 
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              mt: 2,
+              display:"flex",
+              justifyContent:"space-between",
             }}
           >
+
             <Button
               variant="outlined"
-              onClick={onBack}
+              onClick={
+                onBack
+              }
             >
               Back to Dashboard
             </Button>
 
+
+
             <Button
               variant="contained"
-              onClick={() => {
-                EquipmentService.save(
-                  equipment
-                );
-                setSaved(true);
-              }}
+              onClick={
+                saveEquipment
+              }
             >
               Save
             </Button>
+
+
           </Box>
 
+
+
         </CardContent>
+
       </Card>
 
+
+
+
       <Snackbar
-        open={saved}
-        autoHideDuration={3000}
+        open={
+          saved
+        }
+        autoHideDuration={
+          3000
+        }
         onClose={() =>
           setSaved(false)
         }
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
       >
+
         <Alert
           severity="success"
           variant="filled"
-          onClose={() =>
-            setSaved(false)
-          }
         >
-          Equipment saved successfully.
+          Equipment saved successfully
         </Alert>
+
+
       </Snackbar>
 
+
+
     </Box>
+
   );
+
 }

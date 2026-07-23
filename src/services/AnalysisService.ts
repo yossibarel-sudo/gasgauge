@@ -1,8 +1,7 @@
 import type { Equipment } from "../models/Equipment";
 import type { Installation } from "../models/Installation";
 import type { Measurement } from "../models/Measurement";
-import type { BBQSession } from "../models/BBQSession";
-
+import { BBQSessionService } from "./BBQSessionService";
 
 export interface AnalysisResult {
 
@@ -16,7 +15,7 @@ export interface AnalysisResult {
 
   actualKgPerHour: number | null;
 
-  effectiveKgPerHour: number;
+  effectiveKgPerHour: number | null;
 
   usingActualConsumption: boolean;
 
@@ -49,11 +48,9 @@ export class AnalysisService {
     installation: Installation,
 
     equipment: Equipment,
-
-    _measurements: Measurement[],
-
-    bbqSessions: BBQSession[]
-
+    
+    _measurements: Measurement[]
+   
   ): AnalysisResult {
 
 
@@ -119,66 +116,46 @@ export class AnalysisService {
       );
 
 
+ //----------------------------------
+// BBQ sessions
+//----------------------------------
 
-
-    //----------------------------------
-    // BBQ statistics
-    //----------------------------------
-
-    const installationSessions =
-
-  (bbqSessions ?? []).filter(
-
-    (session) =>
-
-      session.installationId ===
-      installation.id
-
+const sessions =
+  BBQSessionService.loadForInstallation(
+    installation.id
   );
 
 
-
-    const totalCookingHours =
-
-      installationSessions.reduce(
-
-        (sum, session) =>
-
-          sum +
-          session.durationHours,
-
-        0
-
-      );
+const totalCookingHours =
+  sessions.reduce(
+    (sum, session) =>
+      sum + session.durationHours,
+    0
+  );
 
 
-
-    const averageSessionHours =
-
-      installationSessions.length > 0
-
-        ? totalCookingHours /
-          installationSessions.length
-
-        : 0;
+const averageSessionHours =
+  sessions.length > 0
+    ? totalCookingHours / sessions.length
+    : 0;
 
 
 
-
-    //----------------------------------
-    // Actual consumption
-    //----------------------------------
-
-    const actualKgPerHour =
-
-      totalCookingHours > 0
-
-        ? gasUsedKg /
-          totalCookingHours
-
-        : null;
+let actualKgPerHour:
+  number | null = null;
 
 
+
+if (
+  gasUsedKg > 0 &&
+  totalCookingHours > 0
+) {
+
+  actualKgPerHour =
+    gasUsedKg /
+    totalCookingHours;
+
+}
 
 
     //----------------------------------
@@ -186,20 +163,12 @@ export class AnalysisService {
     //----------------------------------
 
     const usingActualConsumption =
+  actualKgPerHour !== null;
 
-      actualKgPerHour !== null;
-
-
-
-    const effectiveKgPerHour =
-
-      usingActualConsumption
-
-        ? actualKgPerHour
-
-        : theoreticalKgPerHour;
-
-
+const effectiveKgPerHour =
+  usingActualConsumption
+    ? actualKgPerHour!
+    : theoreticalKgPerHour;
 
 
     //----------------------------------
