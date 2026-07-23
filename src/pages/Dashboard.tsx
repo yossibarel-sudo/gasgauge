@@ -213,7 +213,19 @@ export default function Dashboard({
     setShowSaved(true);
 
   }
-    return (
+  function refreshDashboard() {
+
+  setMeasurements(
+    MeasurementService.load()
+  );
+
+  setInstallation(
+    InstallationService.load()
+  );
+
+}
+
+  return (
 
     <Box
       sx={{
@@ -304,8 +316,9 @@ export default function Dashboard({
       </Paper>
 
       <BBQSessionControl
-        installation={installation}
-      />
+  installation={installation}
+  onSessionFinished={refreshDashboard}
+/>
 
       <Box
         sx={{

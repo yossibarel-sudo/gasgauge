@@ -19,6 +19,7 @@ import { BBQSessionService } from "../services/BBQSessionService";
 
 interface BBQSessionControlProps {
   installation: Installation;
+  onSessionFinished?: () => void;
 }
 
 
@@ -68,6 +69,7 @@ function formatElapsed(
 
 export default function BBQSessionControl({
   installation,
+  onSessionFinished,
 }: BBQSessionControlProps) {
 
 
@@ -202,6 +204,7 @@ const estimatedRemainingHours =
     setElapsed(
       "00:00:00"
     );
+    onSessionFinished?.();
 
   }
 
