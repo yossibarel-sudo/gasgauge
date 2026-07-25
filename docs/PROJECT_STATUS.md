@@ -1,228 +1,266 @@
-## Sprint Progress
-
-Sprint 1  ✅ Complete
-Sprint 2  🚧 65%
-Sprint 3  ⏳ Planned
-
----
 # GasGauge - Project Status
 
-**Last Updated:** July 2026
+**Last Updated:** 25 July 2026
+**Project:** GasGauge
+**Platform:** React + TypeScript + Vite + Material UI
+**Current Sprint:** Sprint 2.7
+**Overall Progress:** ~75%
 
 ---
 
-# Project Overview
+# Project Goal
 
-GasGauge is a Progressive Web Application (PWA) for estimating the remaining LPG in a gas cylinder based on cylinder weight measurements and gas appliance specifications.
+GasGauge predicts the remaining LPG in a cylinder from weight measurements,
+equipment configuration and real cooking history.
 
-The application is built using:
-
-- React 19
-- TypeScript
-- Vite
-- Material UI
+Unlike simple gas calculators, GasGauge continuously improves its prediction
+accuracy by learning from actual user behaviour.
 
 ---
 
-# Current Sprint
+# Completed
 
-## Sprint 2
+## Core Architecture
 
-### Objective
+✔ React + TypeScript + Vite
 
-Complete the core application workflow:
+✔ Material UI
 
-Equipment → Cylinder Installation → Dashboard → Measurements
+✔ LocalStorage persistence
 
----
+✔ Modular services
 
-# Completed Features
-
-## Project Foundation
-
-- ✅ React + Vite
-- ✅ TypeScript
-- ✅ Material UI
-- ✅ React Router navigation
-- ✅ GitHub repository
-- ✅ Project documentation
+✔ Strong TypeScript models
 
 ---
 
 ## Dashboard
 
-Completed
+✔ Remaining LPG
 
-- ✅ Remaining LPG (%)
-- ✅ Remaining LPG (kg)
-- ✅ Remaining cooking hours
-- ✅ Remaining BBQ sessions
-- ✅ Cylinder status
-- ✅ Installation date
-- ✅ Gas calculation engine integration
+✔ Remaining %
+
+✔ Cylinder status
+
+✔ Remaining cooking hours
+
+✔ Remaining BBQ sessions
+
+✔ Current weight
+
+✔ Cylinder age
+
+✔ Measurements count
+
+✔ Traffic-light status
+
+✔ Adaptive consumption display
 
 ---
 
 ## Equipment
 
-Completed
+✔ Manufacturer
 
-- ✅ Equipment domain model
-- ✅ Burner model
-- ✅ Default equipment
-- ✅ Equipment Setup page
-- ✅ Editable equipment form
-- ✅ Burner editing
-- ✅ Save button
-- ✅ Snackbar confirmation
-- ✅ Equipment persistence using localStorage
+✔ Model
 
----
+✔ Dynamic burner list
 
-## Persistence
+✔ Supports 1–6 burners
 
-Completed
+✔ Add burner
 
-- ✅ EquipmentService
-- ✅ InstallationService
-- ✅ localStorage integration
-- ✅ Automatic loading of saved equipment
-- ✅ Automatic loading of saved installation
-- ✅ Proper Date restoration after JSON loading
+✔ Remove burner
+
+✔ Automatic kg/h calculation
+
+✔ Default session duration
 
 ---
-
-# In Progress
 
 ## Cylinder Installation
 
-Current work
+✔ Install new cylinder
 
-- ✅ InstallationService
-- ⏳ Installation dialog
-- ⏳ Dashboard integration
-- ⏳ Save new installation
-- ⏳ Live Dashboard update
+✔ Installation date
+
+✔ Initial weight
+
+✔ Empty cylinder weight
+
+✔ Cylinder capacity
 
 ---
-
-# Next Planned Features
 
 ## Measurements
 
-- Record cylinder weight
-- Measurement history
-- Delete measurements
+✔ Weight history
 
-## BBQ Sessions
+✔ Current weight update
 
-- Record cooking sessions
-- Burner selection
-- Duration
-- Notes
-
-## Statistics
-
-- Weekly consumption
-- Monthly consumption
-- Estimated cylinder lifetime
-
-## Adaptive Calibration
-
-- Compare configured vs measured consumption
-- Recommend equipment adjustment
-- User confirmation before applying changes
+✔ Measurement history
 
 ---
 
-# Current Project Structure
+## BBQ Sessions
 
-```
-src/
-├── assets/
-├── components/
-├── models/
-├── pages/
-├── services/
-├── theme/
-├── App.tsx
-└── main.tsx
-```
+✔ BBQ session history
+
+✔ Manual session entry
+
+✔ Live Start Cooking
+
+✔ Live Finish Cooking
+
+✔ Running timer
+
+✔ Burners used selection
+
+✔ Estimated LPG consumption
+
+✔ Active session recovery after browser refresh
+
+---
+
+## Analysis Engine
+
+✔ Remaining LPG calculation
+
+✔ Remaining percentage
+
+✔ Gas consumed
+
+✔ Theoretical burner consumption
+
+✔ BBQ history analysis
+
+✔ Effective consumption calculation
+
+✔ Actual consumption
+
+✔ Remaining cooking prediction
+
+✔ Remaining BBQ prediction
+
+✔ Efficiency calculation
+
+---
+
+## Navigation
+
+✔ Dashboard
+
+✔ Equipment
+
+✔ Measurements
+
+✔ BBQ Sessions
+
+✔ Consistent Back to Dashboard button
+
+---
+
+# Current Data Model
+
+Installation
+
+Equipment
+
+Burner
+
+Measurement
+
+BBQSession
 
 ---
 
 # Current Services
 
-Completed
+AnalysisService
 
-- GasCalculationService
-- EquipmentService
-- InstallationService
-- defaultEquipment
-- defaultInstallation
+EquipmentService
 
----
+InstallationService
 
-# Coding Standards
+MeasurementService
 
-- Complete files preferred over snippets.
-- Keep the application runnable after every session.
-- One logical feature per commit.
-- No architectural redesign unless requested.
-- Follow Roadmap.md, Requirements.md and DomainModel.md as the single source of truth.
-- Production-quality code.
-- Beginner-friendly explanations when introducing new React concepts.
+BBQSessionService
+
+BurnerCalculationService
 
 ---
 
-# Immediate Next Goal
+# Next Sprint (2.8)
 
-Complete the **Cylinder Installation** workflow.
+## Adaptive Learning Engine
 
-Remaining tasks:
+Instead of assuming burners always consume their theoretical gas rate,
+GasGauge will continuously learn from completed cylinders.
 
-1. Add InstallationDialog component.
-2. Integrate Material UI Date Picker.
-3. Connect Dashboard to InstallationDialog.
-4. Save installation using InstallationService.
-5. Refresh Dashboard immediately after saving.
-6. Replace temporary values with user-configured installation.
+Planned features:
 
----
-
-# Suggested Git History
-
-```
-feat: add equipment model
-feat: add equipment setup page
-feat: add application routing
-feat: add editable equipment form
-feat: persist equipment using local storage
-feat: add snackbar save notification
-feat: add installation persistence layer
-```
+- Learn correction factor from completed cylinders
+- Automatically calibrate burner model
+- Improve future gas predictions
+- Confidence score for predictions
+- Ignore abnormal cooking sessions
+- Display "Prediction Confidence" on Dashboard
 
 ---
 
-# Overall Progress
+# Future Roadmap
 
-| Area | Status |
-|-------|--------|
-| Project Foundation | ✅ Complete |
-| Dashboard | ✅ Complete |
-| Equipment | ✅ Complete |
-| Equipment Persistence | ✅ Complete |
-| Installation Persistence | ✅ Complete |
-| Cylinder Installation UI | 🚧 In Progress |
-| Measurements | ⏳ Planned |
-| BBQ Sessions | ⏳ Planned |
-| Statistics | ⏳ Planned |
-| Adaptive Calibration | ⏳ Planned |
+Sprint 2.9
+
+- Cooking Profiles
+    - Fast cooking
+    - Normal cooking
+    - Low flame
+    - BBQ profile
+
+Sprint 3.0
+
+- Charts
+- Trend graphs
+- Cylinder comparison
+- Usage analytics
+
+Sprint 3.1
+
+- PWA improvements
+- Export / Import
+- Cloud backup
+
+Sprint 3.2
+
+- OCR weight reading from scale display
+- OCR gas meter reading
+- AI cooking insights
 
 ---
 
-# Overall Completion
+# Known Issues
 
-**Approximately 40% of Version 1.0 MVP**
+None
 
-The application's architecture is now stable. Future work will focus primarily on adding business functionality rather than infrastructure.
+Project builds successfully.
+
+TypeScript clean.
+
+Application stable.
+
+---
+
+# Current Git Tag
+
+Sprint 2.7 Stable
+
+---
+
+# Overall Assessment
+
+Project structure is now stable.
+
+The core prediction engine is operational.
+
+Future work is focused primarily on improving prediction accuracy rather than architectural changes.

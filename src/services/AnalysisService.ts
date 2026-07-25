@@ -17,6 +17,10 @@ export interface AnalysisResult {
 
   effectiveKgPerHour: number | null;
 
+  learningFactor: number | null;
+
+  predictionConfidence: number;
+
   usingActualConsumption: boolean;
 
   efficiencyPercent: number | null;
@@ -168,13 +172,35 @@ if (
     // Select consumption source
     //----------------------------------
 
-    const usingActualConsumption =
-  actualKgPerHour !== null;
+   const learningFactor =
+  actualKgPerHour !== null &&
+  theoreticalKgPerHour > 0
+    ? actualKgPerHour /
+      theoreticalKgPerHour
+    : null;
+
+const usingActualConsumption =
+  learningFactor !== null;
 
 const effectiveKgPerHour =
-  usingActualConsumption
-    ? actualKgPerHour!
+  learningFactor !== null
+    ? theoreticalKgPerHour *
+      learningFactor
     : theoreticalKgPerHour;
+
+    let predictionConfidence = 0;
+
+if (completedSessions.length >= 20) {
+
+  predictionConfidence = 100;
+
+}
+else {
+
+  predictionConfidence =
+    completedSessions.length * 5;
+
+}
 
 
     //----------------------------------
@@ -296,6 +322,10 @@ const effectiveKgPerHour =
       actualKgPerHour,
 
       effectiveKgPerHour,
+
+      learningFactor,
+
+      predictionConfidence,
 
       usingActualConsumption,
 

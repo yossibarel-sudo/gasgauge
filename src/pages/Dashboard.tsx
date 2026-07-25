@@ -7,8 +7,11 @@ import {
   Paper,
   Snackbar,
   Table,
+  TableRow,
+  TableCell,
   TableBody,
   Typography,
+  LinearProgress,
 } from "@mui/material";
 
 import BBQSessionControl from "../components/BBQSessionControl";
@@ -421,60 +424,73 @@ export default function Dashboard({
 
         <Table>
 
-          <TableBody>
+      <TableBody>
 
+  <InfoRow
+    label="Remaining Cooking Hours"
+    value={
+      analysis.remainingHours !== null
+        ? `${analysis.remainingHours.toFixed(1)} h`
+        : "--"
+    }
+  />
 
-            <InfoRow
-              label="Remaining Cooking Hours"
-              value={
-                analysis.remainingHours !== null
-                  ? `${analysis.remainingHours.toFixed(1)} h`
-                  : "--"
-              }
-            />
+  <InfoRow
+    label="Remaining BBQ Sessions"
+    value={
+      analysis.remainingSessions !== null
+        ? analysis.remainingSessions.toFixed(1)
+        : "--"
+    }
+  />
 
+  <InfoRow
+    label="Configured Consumption"
+    value={`${analysis.theoreticalKgPerHour.toFixed(3)} kg/h`}
+  />
 
+  <InfoRow
+    label="Learned Consumption"
+    value={
+      analysis.effectiveKgPerHour !== null
+        ? `${analysis.effectiveKgPerHour.toFixed(3)} kg/h`
+        : "--"
+    }
+  />
 
-            <InfoRow
-              label="Remaining BBQ Sessions"
-              value={
-                analysis.remainingSessions !== null
-                  ? analysis.remainingSessions.toFixed(1)
-                  : "--"
-              }
-            />
+  <InfoRow
+    label="Learning Factor"
+    value={
+      analysis.learningFactor !== null
+        ? `${(analysis.learningFactor * 100).toFixed(0)} %`
+        : "--"
+    }
+  />
 
+  <InfoRow
+    label="Prediction Confidence"
+    value={`${analysis.predictionConfidence.toFixed(0)} %`}
+  />
 
+  <TableRow>
+    <TableCell colSpan={2}>
+      <LinearProgress
+        variant="determinate"
+        value={analysis.predictionConfidence}
+        sx={{
+          height: 8,
+          borderRadius: 4,
+        }}
+      />
+    </TableCell>
+  </TableRow>
 
-            <InfoRow
-              label="Configured Consumption"
-              value={
-                `${analysis.theoreticalKgPerHour.toFixed(3)} kg/h`
-              }
-            />
+  <InfoRow
+    label="Total BBQ Hours"
+    value={`${analysis.totalCookingHours.toFixed(1)} h`}
+  />
 
-
-
-            <InfoRow
-              label="Measured Consumption"
-              value={
-                analysis.actualKgPerHour !== null
-                  ? `${analysis.actualKgPerHour.toFixed(3)} kg/h`
-                  : "--"
-              }
-            />
-
-
-
-            <InfoRow
-              label="Total BBQ Hours"
-              value={
-                `${analysis.totalCookingHours.toFixed(1)} h`
-              }
-            />
-
-
-          </TableBody>
+</TableBody>
 
         </Table>
 
