@@ -316,9 +316,10 @@ export default function Dashboard({
       </Paper>
 
       <BBQSessionControl
-  installation={installation}
+  installationId={installation.id}
+  analysis={analysis}
   onSessionFinished={refreshDashboard}
-/>
+  />
 
       <Box
         sx={{

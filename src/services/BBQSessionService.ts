@@ -1,17 +1,13 @@
 import type { BBQSession } from "../models/BBQSession";
-
+import { EquipmentService } from "./EquipmentService";
 
 const STORAGE_KEY =
   "gasgauge-bbq-sessions";
 
-
 const ACTIVE_KEY =
   "gasgauge-active-bbq-session";
 
-
-
 export class BBQSessionService {
-
 
   static load(): BBQSession[] {
 
@@ -20,70 +16,62 @@ export class BBQSessionService {
         STORAGE_KEY
       );
 
-
     if (!json) {
       return [];
     }
 
-
     return (
       JSON.parse(json) as BBQSession[]
     )
-    .map((session) => ({
-      ...session,
+      .map((session) => ({
 
-      date:
-        new Date(session.date),
+        ...session,
 
-      startTime:
-        session.startTime
-          ? new Date(session.startTime)
-          : undefined,
+        date:
+          new Date(session.date),
 
-      endTime:
-        session.endTime
-          ? new Date(session.endTime)
-          : undefined,
-    }))
-    .sort(
-      (a,b)=>
-        b.date.getTime()
-        -
-        a.date.getTime()
-    );
+        startTime:
+          session.startTime
+            ? new Date(session.startTime)
+            : undefined,
+
+        endTime:
+          session.endTime
+            ? new Date(session.endTime)
+            : undefined,
+
+      }))
+      .sort(
+        (a, b) =>
+          b.date.getTime() -
+          a.date.getTime()
+      );
 
   }
 
-
-
-
-
   static loadForInstallation(
-    installationId:string
+    installationId: string
   ): BBQSession[] {
 
     return this.load()
       .filter(
         session =>
-          session.installationId === installationId
+          session.installationId ===
+          installationId
       );
 
   }
 
-
-
-
-
   static save(
     session: BBQSession
-  ):void {
+  ): void {
 
     const sessions =
       this.load();
 
-
-    sessions.push(session);
-
+    sessions.push(
+      session
+    );
 
     localStorage.setItem(
       STORAGE_KEY,
@@ -92,24 +80,18 @@ export class BBQSessionService {
 
   }
 
-
-
-
-
   static delete(
-    id:string
-  ):void {
+    id: string
+  ): void {
 
     const sessions =
       this.load();
-
 
     const updated =
       sessions.filter(
         session =>
           session.id !== id
       );
-
 
     localStorage.setItem(
       STORAGE_KEY,
@@ -118,30 +100,23 @@ export class BBQSessionService {
 
   }
 
-
-
-
-
   static getActiveSession():
     BBQSession | null {
-
 
     const json =
       localStorage.getItem(
         ACTIVE_KEY
       );
 
-
     if (!json) {
       return null;
     }
 
-
     const session =
       JSON.parse(json);
 
-
     return {
+
       ...session,
 
       date:
@@ -154,21 +129,14 @@ export class BBQSessionService {
 
   }
 
-
-
-
-
   static startSession(
-    installationId:string
-  ):BBQSession {
-
+    installationId: string
+  ): BBQSession {
 
     const now =
       new Date();
 
-
-    const session:BBQSession =
-    {
+    const session: BBQSession = {
 
       id:
         crypto.randomUUID(),
@@ -187,55 +155,55 @@ export class BBQSessionService {
       burnersUsed:
         1,
 
-    };
+      estimatedGasUsedKg:
+        0,
 
+    };
 
     localStorage.setItem(
       ACTIVE_KEY,
       JSON.stringify(session)
     );
 
-
     return session;
 
   }
 
-
-
-
-
   static finishSession(
-    burnersUsed:number
-  ):BBQSession|null {
-
+    burnersUsed: number
+  ): BBQSession | null {
 
     const active =
       this.getActiveSession();
-
 
     if (!active) {
       return null;
     }
 
-
     const end =
       new Date();
 
-
     const duration =
       (
-        end.getTime()
-        -
+        end.getTime() -
         active.startTime!.getTime()
+      ) /
+      (1000 * 60 * 60);
 
-      )
-      /
-      (1000*60*60);
+    const equipment =
+      EquipmentService.load();
 
+    const estimatedKgPerHour =
+      equipment.burners
+        .slice(0, burnersUsed)
+        .reduce(
+          (sum, burner) =>
+            sum +
+            burner.calculatedKgPerHour,
+          0
+        );
 
-
-    const finished:BBQSession =
-    {
+    const finished: BBQSession = {
 
       ...active,
 
@@ -247,28 +215,25 @@ export class BBQSessionService {
 
       burnersUsed,
 
-    };
+      estimatedGasUsedKg:
+        estimatedKgPerHour *
+        duration,
 
+    };
 
     this.save(
       finished
     );
 
-
     localStorage.removeItem(
       ACTIVE_KEY
     );
-
 
     return finished;
 
   }
 
-
-
-
-
-  static clear():void {
+  static clear(): void {
 
     localStorage.removeItem(
       STORAGE_KEY
@@ -279,6 +244,5 @@ export class BBQSessionService {
     );
 
   }
-
 
 }

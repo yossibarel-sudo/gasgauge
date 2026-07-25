@@ -116,7 +116,7 @@ export class AnalysisService {
       );
 
 
- //----------------------------------
+//----------------------------------
 // BBQ sessions
 //----------------------------------
 
@@ -125,36 +125,42 @@ const sessions =
     installation.id
   );
 
+const completedSessions =
+  sessions.filter(
+    session =>
+      session.estimatedGasUsedKg > 0
+  );
 
 const totalCookingHours =
-  sessions.reduce(
+  completedSessions.reduce(
     (sum, session) =>
       sum + session.durationHours,
     0
   );
 
+const totalEstimatedGasUsedKg =
+  completedSessions.reduce(
+    (sum, session) =>
+      sum + session.estimatedGasUsedKg,
+    0
+  );
 
 const averageSessionHours =
-  sessions.length > 0
-    ? totalCookingHours / sessions.length
+  completedSessions.length > 0
+    ? totalCookingHours /
+      completedSessions.length
     : 0;
-
-
 
 let actualKgPerHour:
   number | null = null;
 
-
-
 if (
-  gasUsedKg > 0 &&
-  totalCookingHours > 0
+  totalCookingHours > 0 &&
+  totalEstimatedGasUsedKg > 0
 ) {
-
   actualKgPerHour =
-    gasUsedKg /
+    totalEstimatedGasUsedKg /
     totalCookingHours;
-
 }
 
 

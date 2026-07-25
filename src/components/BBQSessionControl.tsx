@@ -1,362 +1,194 @@
 import { useEffect, useState } from "react";
 
 import {
-  Box,
   Button,
-  IconButton,
+  MenuItem,
   Paper,
+  TextField,
   Typography,
 } from "@mui/material";
 
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { AnalysisService } from "../services/AnalysisService";
-import { EquipmentService } from "../services/EquipmentService";
-import type { Installation } from "../models/Installation";
-
 import { BBQSessionService } from "../services/BBQSessionService";
 
+import type { BBQSession } from "../models/BBQSession";
+import type { AnalysisResult } from "../services/AnalysisService";
 
-interface BBQSessionControlProps {
-  installation: Installation;
-  onSessionFinished?: () => void;
+interface Props {
+  installationId: string;
+  analysis: AnalysisResult;
+  onSessionFinished: () => void;
 }
-
-
-
-function formatElapsed(
-  startTime: Date
-): string {
-
-  const seconds =
-    Math.floor(
-      (
-        Date.now()
-        -
-        startTime.getTime()
-      )
-      /
-      1000
-    );
-
-
-  const hours =
-    Math.floor(
-      seconds / 3600
-    );
-
-
-  const minutes =
-    Math.floor(
-      (seconds % 3600) / 60
-    );
-
-
-  const secs =
-    seconds % 60;
-
-
-  return (
-    `${String(hours).padStart(2,"0")}:` +
-    `${String(minutes).padStart(2,"0")}:` +
-    `${String(secs).padStart(2,"0")}`
-  );
-
-}
-
-
-
 
 export default function BBQSessionControl({
-  installation,
+  installationId,
+  analysis,
   onSessionFinished,
-}: BBQSessionControlProps) {
-
+}: Props) {
 
   const [activeSession, setActiveSession] =
-    useState(
-      () =>
-        BBQSessionService.getActiveSession()
+    useState<BBQSession | null>(
+      BBQSessionService.getActiveSession()
     );
-
-
-  const [elapsed, setElapsed] =
-    useState("00:00:00");
-
 
   const [burnersUsed, setBurnersUsed] =
     useState(1);
 
-const equipment = EquipmentService.load();
-
-const analysis = AnalysisService.analyze(
-  installation,
-  equipment,
-  []
-);
-
-const estimatedGasUsed =
-  activeSession &&
-  analysis.effectiveKgPerHour !== null
-    ? analysis.effectiveKgPerHour *
-      (
-        (Date.now() -
-          activeSession.startTime!.getTime()) /
-        (1000 * 60 * 60)
-      )
-    : 0;
-
-const estimatedRemaining =
-  Math.max(
-    0,
-    analysis.remainingLpgKg -
-      estimatedGasUsed
-  );
-
-const estimatedRemainingHours =
-  analysis.effectiveKgPerHour !== null &&
-  analysis.effectiveKgPerHour > 0
-    ? estimatedRemaining /
-      analysis.effectiveKgPerHour
-    : null;
+  const [, forceRefresh] =
+    useState(0);
 
   useEffect(() => {
 
-
     if (!activeSession) {
-
-      setElapsed(
-        "00:00:00"
-      );
-
       return;
-
     }
-
-
 
     const timer =
       setInterval(() => {
 
+        forceRefresh(
+          value => value + 1
+        );
 
-        if (
-          activeSession.startTime
-        ) {
-
-          setElapsed(
-            formatElapsed(
-              activeSession.startTime
-            )
-          );
-
-        }
-
-
-      },1000);
-
-
+      }, 1000);
 
     return () =>
       clearInterval(timer);
 
+  }, [activeSession]);
 
+  function elapsedHours(): number {
 
-  },[activeSession]);
+    if (
+      !activeSession?.startTime
+    ) {
+      return 0;
+    }
 
-
-
-
-
-
-  function startBBQ() {
-
-
-    const session =
-      BBQSessionService.startSession(
-        installation.id
-      );
-
-
-    setActiveSession(
-      session
-    );
+    return (
+      Date.now() -
+      activeSession.startTime.getTime()
+    ) /
+    (1000 * 60 * 60);
 
   }
 
+  function startSession() {
 
+    const session =
+      BBQSessionService.startSession(
+        installationId
+      );
 
+    setActiveSession(session);
 
+  }
 
-
-  function stopBBQ() {
-
+  function finishSession() {
 
     BBQSessionService.finishSession(
       burnersUsed
     );
 
+    setActiveSession(null);
 
-    setActiveSession(
-      null
-    );
-
-
-    setElapsed(
-      "00:00:00"
-    );
-    onSessionFinished?.();
+    onSessionFinished();
 
   }
 
-
-
-
-
+  const estimatedGas =
+    analysis.effectiveKgPerHour != null
+      ? analysis.effectiveKgPerHour *
+        elapsedHours()
+      : 0;
 
   return (
 
     <Paper
       sx={{
-        p:2,
-        mb:3,
+        p: 2,
+        mb: 3,
       }}
     >
 
+      <Typography
+        variant="h6"
+        gutterBottom
+      >
+        BBQ Session
+      </Typography>
+
       {
-        !activeSession
-
-        ?
-
-        <Button
-          fullWidth
-          variant="contained"
-          size="large"
-          onClick={
-            startBBQ
-          }
-        >
-          🔥 Start BBQ
-        </Button>
-
-
-        :
-
-
-        <Box>
-
-
-          <Typography
-            variant="h6"
-          >
-            🔥 BBQ Running
-          </Typography>
-
-
-
-          <Typography
-            sx={{
-              my:2,
-              fontSize:24,
-            }}
-          >
-            {elapsed}
-          </Typography>
-
-<Typography>
-  Estimated gas used:
-  {" "}
-  {estimatedGasUsed.toFixed(2)} kg
-</Typography>
-
-<Typography
-  sx={{
-    mb:2,
-  }}
->
-  Estimated remaining:
-  {" "}
-  {estimatedRemaining.toFixed(2)} kg
-</Typography>
-
-<Typography sx={{ mb: 2 }}>
-  Estimated cooking time left:
-  {" "}
-  {
-    estimatedRemainingHours !== null
-      ? `${estimatedRemainingHours.toFixed(1)} h`
-      : "--"
-  }
-</Typography>
-
-          <Box
-            sx={{
-              display:"flex",
-              justifyContent:"center",
-              alignItems:"center",
-              gap:2,
-              mb:2,
-            }}
-          >
-
-            <IconButton
-              onClick={() =>
-                setBurnersUsed(
-                  Math.max(
-                    1,
-                    burnersUsed - 1
-                  )
-                )
-              }
-            >
-              <RemoveIcon/>
-            </IconButton>
-
-
-
-            <Typography
-              variant="h6"
-            >
-              {burnersUsed}
-              {" burners"}
-            </Typography>
-
-
-
-            <IconButton
-              onClick={() =>
-                setBurnersUsed(
-                  Math.min(
-                    6,
-                    burnersUsed + 1
-                  )
-                )
-              }
-            >
-              <AddIcon/>
-            </IconButton>
-
-
-          </Box>
-
-
-
+        !activeSession ? (
 
           <Button
             fullWidth
-            color="error"
             variant="contained"
-            onClick={
-              stopBBQ
-            }
+            onClick={startSession}
           >
-            Stop BBQ
+            Start Cooking
           </Button>
 
+        ) : (
 
-        </Box>
+          <>
 
+            <Typography
+              sx={{ mb: 2 }}
+            >
+              Running:
+              {" "}
+              {elapsedHours().toFixed(2)}
+              {" h"}
+            </Typography>
+
+            <Typography
+              sx={{ mb: 2 }}
+            >
+              Estimated LPG:
+              {" "}
+              {estimatedGas.toFixed(2)}
+              {" kg"}
+            </Typography>
+
+            <TextField
+              fullWidth
+              select
+              label="Burners Used"
+              value={burnersUsed}
+              sx={{ mb: 2 }}
+              onChange={(e) =>
+                setBurnersUsed(
+                  Number(
+                    e.target.value
+                  )
+                )
+              }
+            >
+              {[1,2,3,4,5,6].map(
+                burner => (
+                  <MenuItem
+                    key={burner}
+                    value={burner}
+                  >
+                    {burner}
+                  </MenuItem>
+                )
+              )}
+            </TextField>
+
+            <Button
+              fullWidth
+              color="error"
+              variant="contained"
+              onClick={finishSession}
+            >
+              Finish Cooking
+            </Button>
+
+          </>
+
+        )
       }
-
 
     </Paper>
 
