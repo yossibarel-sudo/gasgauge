@@ -322,6 +322,9 @@ export default function Dashboard({
   installationId={installation.id}
   analysis={analysis}
   onSessionFinished={refreshDashboard}
+  onRequestWeightEntry={() =>
+    setWeightDialogOpen(true)
+}
   />
 
       <Box

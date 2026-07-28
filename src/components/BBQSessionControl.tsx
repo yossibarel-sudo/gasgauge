@@ -19,12 +19,14 @@ interface Props {
   installationId: string;
   analysis: AnalysisResult;
   onSessionFinished: () => void;
+  onRequestWeightEntry: () => void;
 }
 
 export default function BBQSessionControl({
   installationId,
   analysis,
   onSessionFinished,
+  onRequestWeightEntry,
 }: Props) {
 
   const [activeSession, setActiveSession] =
@@ -100,9 +102,11 @@ export default function BBQSessionControl({
 
     setActiveSession(null);
 
-    setBurnerIds([]);
+setBurnerIds([]);
 
-    onSessionFinished();
+onSessionFinished();
+
+onRequestWeightEntry();
 
   }
 
