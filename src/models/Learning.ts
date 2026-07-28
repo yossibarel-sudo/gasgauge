@@ -1,9 +1,13 @@
-export interface CylinderLearning {
+export interface LearningRecord {
   id: string;
 
-  installationId: string;
+  startMeasurementId: string;
 
-  completedDate: Date;
+  endMeasurementId: string;
+
+  gasConsumedKg: number;
+
+  cookingHours: number;
 
   theoreticalKgPerHour: number;
 
@@ -11,9 +15,7 @@ export interface CylinderLearning {
 
   correctionFactor: number;
 
-  cookingHours: number;
-
-  gasConsumedKg: number;
+  createdAt: Date;
 
   ignored: boolean;
 }

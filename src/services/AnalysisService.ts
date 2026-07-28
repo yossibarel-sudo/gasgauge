@@ -2,6 +2,7 @@ import type { Equipment } from "../models/Equipment";
 import type { Installation } from "../models/Installation";
 import type { Measurement } from "../models/Measurement";
 import { BBQSessionService } from "./BBQSessionService";
+import { LearningService } from "./LearningService";
 
 export interface AnalysisResult {
 
@@ -35,10 +36,13 @@ export interface AnalysisResult {
 
   averageSessionHours: number;
 
+  calibrationFactor: number;
+
   status:
     | "GOOD"
     | "LOW"
     | "CRITICAL";
+
 }
 
 
@@ -182,25 +186,13 @@ if (
 const usingActualConsumption =
   learningFactor !== null;
 
+const learning = LearningService.statistics();
+
+const baseKgPerHour =
+  actualKgPerHour ?? theoreticalKgPerHour;
+
 const effectiveKgPerHour =
-  learningFactor !== null
-    ? theoreticalKgPerHour *
-      learningFactor
-    : theoreticalKgPerHour;
-
-    let predictionConfidence = 0;
-
-if (completedSessions.length >= 20) {
-
-  predictionConfidence = 100;
-
-}
-else {
-
-  predictionConfidence =
-    completedSessions.length * 5;
-
-}
+  baseKgPerHour * learning.calibrationFactor;
 
 
     //----------------------------------
@@ -325,7 +317,9 @@ else {
 
       learningFactor,
 
-      predictionConfidence,
+      predictionConfidence: learning.confidence,
+
+      calibrationFactor: learning.calibrationFactor,
 
       usingActualConsumption,
 

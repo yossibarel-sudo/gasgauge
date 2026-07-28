@@ -1,29 +1,34 @@
 import type {
-  CylinderLearning,
+  LearningRecord,
   LearningStatistics,
 } from "../models/Learning";
 
 const STORAGE_KEY = "gasgauge_learning";
 
 export class LearningService {
-  static load(): CylinderLearning[] {
+  static load(): LearningRecord[] {
     const json = localStorage.getItem(STORAGE_KEY);
 
-    if (!json) return [];
+    if (!json) {
+      return [];
+    }
 
-    const data = JSON.parse(json) as CylinderLearning[];
+    const data = JSON.parse(json) as LearningRecord[];
 
     return data.map((item) => ({
       ...item,
-      completedDate: new Date(item.completedDate),
+      createdAt: new Date(item.createdAt),
     }));
   }
 
-  static save(data: CylinderLearning[]): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  static save(data: LearningRecord[]): void {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(data)
+    );
   }
 
-  static add(record: CylinderLearning): void {
+  static add(record: LearningRecord): void {
     const records = this.load();
 
     records.push(record);
@@ -32,7 +37,9 @@ export class LearningService {
   }
 
   static statistics(): LearningStatistics {
-    const records = this.load().filter((r) => !r.ignored);
+    const records = this.load().filter(
+      (record) => !record.ignored
+    );
 
     if (records.length === 0) {
       return {
@@ -44,29 +51,37 @@ export class LearningService {
       };
     }
 
-    const average =
-      records.reduce((sum, r) => sum + r.correctionFactor, 0) /
-      records.length;
-
-    const variance =
+    const averageCorrection =
       records.reduce(
-        (sum, r) => sum + Math.pow(r.correctionFactor - average, 2),
+        (sum, record) => sum + record.correctionFactor,
         0
       ) / records.length;
 
-    const deviation = Math.sqrt(variance);
+    const variance =
+      records.reduce(
+        (sum, record) =>
+          sum +
+          Math.pow(
+            record.correctionFactor - averageCorrection,
+            2
+          ),
+        0
+      ) / records.length;
+
+    const standardDeviation =
+      Math.sqrt(variance);
 
     const confidence = Math.min(
       100,
-      Math.round(records.length * 15 - deviation * 40)
+      records.length * 10
     );
 
     return {
-      calibrationFactor: average,
-      confidence: Math.max(0, confidence),
+      calibrationFactor: averageCorrection,
+      confidence,
       completedCylinders: records.length,
-      averageCorrection: average,
-      standardDeviation: deviation,
+      averageCorrection,
+      standardDeviation,
     };
   }
 }

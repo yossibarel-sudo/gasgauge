@@ -30,8 +30,7 @@ export interface BBQSession {
   /**
    * Number of burners used.
    */
-  burnersUsed?: number;
-
+  burnerIds: number[];
   /**
    * Estimated LPG consumed during this session.
    */
