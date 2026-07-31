@@ -37,6 +37,8 @@ interface DashboardProps {
 
   onBBQSessions: () => void;
 
+  onLearning: () => void;
+
 }
 
 
@@ -68,6 +70,8 @@ export default function Dashboard({
   onMeasurements,
 
   onBBQSessions,
+
+  onLearning,
 
 }: DashboardProps) {
 
@@ -207,6 +211,9 @@ const learning =
   remainingPercent:
     updatedAnalysis.remainingPercent,
 
+  bbqRelated:
+    lastSession !== null,
+
 };
 
 MeasurementService.save(
@@ -219,7 +226,10 @@ const previousMeasurement =
     newMeasurement.date
   );
 
-if (previousMeasurement) {
+if (
+  previousMeasurement &&
+  newMeasurement.bbqRelated
+) {
 
   LearningService.learnFromMeasurements(
     previousMeasurement,
@@ -567,6 +577,15 @@ if (previousMeasurement) {
           onClick={onBBQSessions}
         >
           BBQ Sessions
+        </Button>
+
+        <Button
+          fullWidth
+          variant="outlined"
+          //sx={{ mt: 2 }}
+          onClick={onLearning}
+        >
+         Learning History
         </Button>
 
 

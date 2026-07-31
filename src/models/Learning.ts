@@ -20,6 +20,8 @@ export interface LearningRecord {
 
   ignored: boolean;
 
+  ignoredReason?: string;
+
 }
 
 export interface LearningStatistics {

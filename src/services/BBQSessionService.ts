@@ -238,4 +238,25 @@ export class BBQSessionService {
 
   }
 
+  static latestCompleted(
+  installationId: string
+): BBQSession | null {
+
+  const sessions =
+    this.loadForInstallation(
+      installationId
+    );
+
+  if (sessions.length === 0) {
+    return null;
+  }
+
+  return sessions.sort(
+    (a, b) =>
+      (b.endTime?.getTime() ?? 0) -
+      (a.endTime?.getTime() ?? 0)
+  )[0];
+
+}
+
 }

@@ -42,14 +42,50 @@ export class LearningService {
   static learnFromMeasurements(
   previous: Measurement,
   current: Measurement
-): void {
+): void 
+{
+//----------------------------------
+// Ignore invalid measurements
+//----------------------------------
 
   if (
-    current.grossWeightKg >=
-    previous.grossWeightKg
-  ) {
-    return;
-  }
+  !current.bbqRelated
+) { return;}
+  if (
+  current.grossWeightKg >=
+  previous.grossWeightKg
+) {
+
+  this.add({
+
+    id: crypto.randomUUID(),
+
+    startMeasurementId: previous.id,
+
+    endMeasurementId: current.id,
+
+    createdAt: new Date(),
+
+    gasConsumedKg: 0,
+
+    cookingHours: 0,
+
+    theoreticalKgPerHour: 0,
+
+    actualKgPerHour: 0,
+
+    correctionFactor: 1,
+
+    ignored: true,
+
+    ignoredReason:
+      "Weight increased",
+
+  });
+
+  return;
+
+}
 
   const sessions =
     BBQSessionService.betweenDates(
@@ -59,8 +95,37 @@ export class LearningService {
     );
 
   if (sessions.length === 0) {
-    return;
-  }
+
+  this.add({
+
+    id: crypto.randomUUID(),
+
+    startMeasurementId: previous.id,
+
+    endMeasurementId: current.id,
+
+    createdAt: new Date(),
+
+    gasConsumedKg: 0,
+
+    cookingHours: 0,
+
+    theoreticalKgPerHour: 0,
+
+    actualKgPerHour: 0,
+
+    correctionFactor: 1,
+
+    ignored: true,
+
+    ignoredReason:
+      "No BBQ sessions",
+
+  });
+
+  return;
+
+}
 
   const equipment =
     EquipmentService.load();
@@ -104,9 +169,81 @@ export class LearningService {
     previous.grossWeightKg -
     current.grossWeightKg;
 
+    if (
+  gasConsumedKg <= 0 ||
+  gasConsumedKg > 3
+) {
+
+  this.add({
+
+    id: crypto.randomUUID(),
+
+    startMeasurementId: previous.id,
+
+    endMeasurementId: current.id,
+
+    createdAt: new Date(),
+
+    gasConsumedKg,
+
+    cookingHours,
+
+    theoreticalKgPerHour: 0,
+
+    actualKgPerHour: 0,
+
+    correctionFactor: 1,
+
+    ignored: true,
+
+    ignoredReason:
+      "Invalid gas consumption",
+
+  });
+
+  return;
+
+}
+
   const actualKgPerHour =
     gasConsumedKg /
     cookingHours;
+
+  if (
+  actualKgPerHour < 0.05 ||
+  actualKgPerHour > 2
+) {
+
+  this.add({
+
+    id: crypto.randomUUID(),
+
+    startMeasurementId: previous.id,
+
+    endMeasurementId: current.id,
+
+    createdAt: new Date(),
+
+    gasConsumedKg,
+
+    cookingHours,
+
+    theoreticalKgPerHour: 0,
+
+    actualKgPerHour,
+
+    correctionFactor: 1,
+
+    ignored: true,
+
+    ignoredReason:
+      "Invalid flow rate",
+
+  });
+
+  return;
+
+}
 
   const theoreticalKgPerHour =
     theoreticalGas /
@@ -117,11 +254,40 @@ export class LearningService {
     theoreticalKgPerHour;
 
   if (
-    correctionFactor < 0.5 ||
-    correctionFactor > 1.5
-  ) {
-    return;
-  }
+  correctionFactor < 0.7 ||
+  correctionFactor > 1.3
+) {
+
+  this.add({
+
+    id: crypto.randomUUID(),
+
+    startMeasurementId: previous.id,
+
+    endMeasurementId: current.id,
+
+    createdAt: new Date(),
+
+    gasConsumedKg,
+
+    cookingHours,
+
+    theoreticalKgPerHour,
+
+    actualKgPerHour,
+
+    correctionFactor,
+
+    ignored: true,
+
+    ignoredReason:
+      "Correction factor out of range",
+
+  });
+
+  return;
+
+}
 
   this.add({
 

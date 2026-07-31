@@ -4,13 +4,15 @@ import Dashboard from "./pages/Dashboard";
 import EquipmentPage from "./pages/EquipmentPage";
 import MeasurementsPage from "./pages/MeasurementsPage";
 import BBQSessionsPage from "./pages/BBQSessionsPage";
-
+import LearningPage from "./pages/LearningPage";
 
 type Page =
   | "dashboard"
   | "equipment"
   | "measurements"
-  | "bbqSessions";
+  | "bbqSessions"
+  | "learning"
+;
 
 
 
@@ -82,7 +84,13 @@ export default function App() {
 
   }
 
-
+  if (page === "learning") {
+  return (
+    <LearningPage
+      onBack={() => setPage("dashboard")}
+    />
+  );
+}
 
 
   return (
@@ -101,6 +109,10 @@ export default function App() {
 
       onBBQSessions={() =>
         setPage("bbqSessions")
+      }
+
+      onLearning={() =>
+        setPage("learning")
       }
 
     />

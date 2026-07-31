@@ -11,5 +11,11 @@ export interface Measurement {
 
   remainingPercent: number;
 
+    /**
+   * Measurement taken immediately after a BBQ session.
+   * Used by the adaptive learning engine.
+   */
+  bbqRelated?: boolean;
+
   notes?: string;
 }
