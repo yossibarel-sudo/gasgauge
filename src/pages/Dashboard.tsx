@@ -24,9 +24,10 @@ import { AnalysisService } from "../services/AnalysisService";
 import { InstallationService } from "../services/InstallationService";
 import { MeasurementService } from "../services/MeasurementService";
 import { EquipmentService } from "../services/EquipmentService";
-
+import { LearningService } from "../services/LearningService";
+import type { Measurement } from "../models/Measurement";
 import type { Installation } from "../models/Installation";
-
+import type { BBQSession } from "../models/BBQSession";
 
 interface DashboardProps {
 
@@ -82,12 +83,20 @@ export default function Dashboard({
       () => MeasurementService.load()
     );
 
-
+const [lastSession, setLastSession] =
+  useState<BBQSession | null>(null);
 
   const equipment =
     EquipmentService.load();
 
-
+const burnerNames =
+  lastSession?.burnerIds
+    ?.map(id =>
+      equipment.burners.find(
+        burner => burner.id === id
+      )?.name ?? `#${id}`
+    )
+    .join(", ");
 
   const analysis =
   AnalysisService.analyze(
@@ -96,7 +105,8 @@ export default function Dashboard({
     measurements,
   );
 
-
+const learning =
+  LearningService.statistics();
 
   const [
     installationDialogOpen,
@@ -149,7 +159,8 @@ export default function Dashboard({
 
   function saveWeight(
     weight: number
-  ) {
+  ) 
+  {
 
 
     const updatedInstallation =
@@ -177,28 +188,45 @@ export default function Dashboard({
 
 
 
-    MeasurementService.save({
+    const newMeasurement: Measurement = {
 
-      id: crypto.randomUUID(),
+  id: crypto.randomUUID(),
 
-      installationId:
-        installation.id,
+  installationId:
+    installation.id,
 
-      date:
-        new Date(),
+  date:
+    new Date(),
 
-      grossWeightKg:
-        weight,
+  grossWeightKg:
+    weight,
 
-      remainingLpgKg:
-        updatedAnalysis.remainingLpgKg,
+  remainingLpgKg:
+    updatedAnalysis.remainingLpgKg,
 
-      remainingPercent:
-        updatedAnalysis.remainingPercent,
+  remainingPercent:
+    updatedAnalysis.remainingPercent,
 
-    });
+};
 
+MeasurementService.save(
+  newMeasurement
+);
 
+const previousMeasurement =
+  MeasurementService.latestBefore(
+    installation.id,
+    newMeasurement.date
+  );
+
+if (previousMeasurement) {
+
+  LearningService.learnFromMeasurements(
+    previousMeasurement,
+    newMeasurement
+  );
+
+}
 
     setInstallation(
       updatedInstallation
@@ -216,17 +244,7 @@ export default function Dashboard({
     setShowSaved(true);
 
   }
-  function refreshDashboard() {
-
-  setMeasurements(
-    MeasurementService.load()
-  );
-
-  setInstallation(
-    InstallationService.load()
-  );
-
-}
+  
 
   return (
 
@@ -321,10 +339,13 @@ export default function Dashboard({
       <BBQSessionControl
   installationId={installation.id}
   analysis={analysis}
-  onSessionFinished={refreshDashboard}
-  onRequestWeightEntry={() =>
-    setWeightDialogOpen(true)
-}
+  onSessionFinished={(session) => {
+
+  setLastSession(session);
+
+  setWeightDialogOpen(true);
+
+}}
   />
 
       <Box
@@ -357,6 +378,11 @@ export default function Dashboard({
           value={
             measurements.length
           }
+        />
+
+        <MetricCard
+          title="Learning Samples"
+          value={learning.completedCylinders.toString()}
         />
 
 
@@ -471,9 +497,14 @@ export default function Dashboard({
   />
 
   <InfoRow
-    label="Prediction Confidence"
-    value={`${analysis.predictionConfidence.toFixed(0)} %`}
-  />
+  label="Calibration Factor"
+  value={learning.calibrationFactor.toFixed(3)}
+/>
+
+<InfoRow
+  label="Prediction Confidence"
+  value={`${learning.confidence}%`}
+/>
 
   <TableRow>
     <TableCell colSpan={2}>
@@ -543,21 +574,6 @@ export default function Dashboard({
 
 
 
-
-      <Button
-        fullWidth
-        variant="contained"
-        size="large"
-        sx={{mb:2}}
-        onClick={() =>
-          setWeightDialogOpen(true)
-        }
-      >
-        Add Cylinder Weight
-      </Button>
-
-
-
       <Button
         fullWidth
         variant="contained"
@@ -584,15 +600,30 @@ export default function Dashboard({
 
 
       <WeightDialog
-        open={weightDialogOpen}
-        currentWeight={
-          installation.currentGrossWeightKg
-        }
-        onCancel={() =>
-          setWeightDialogOpen(false)
-        }
-        onSave={saveWeight}
-      />
+  open={weightDialogOpen}
+  previousWeight={
+    installation.currentGrossWeightKg
+  }
+  currentWeight={
+    installation.currentGrossWeightKg
+  }
+  sessionDate={
+    lastSession?.endTime
+  }
+  sessionDurationHours={
+    lastSession?.durationHours
+  }
+  burners={
+    burnerNames
+  }
+  estimatedGasKg={
+    lastSession?.estimatedGasUsedKg
+  }
+  onCancel={() =>
+    setWeightDialogOpen(false)
+  }
+  onSave={saveWeight}
+/>
 
 
 

@@ -60,7 +60,27 @@ export class MeasurementService {
     return measurements[0];
   }
 
-  static clear(): void {
-    localStorage.removeItem(STORAGE_KEY);
-  }
+  static latestBefore(
+  installationId: string,
+  date: Date
+): Measurement | null {
+
+  const measurements =
+    this.load()
+      .filter(
+        measurement =>
+          measurement.installationId === installationId &&
+          measurement.date < date
+      )
+      .sort(
+        (a, b) =>
+          b.date.getTime() -
+          a.date.getTime()
+      );
+
+  return measurements.length > 0
+    ? measurements[0]
+    : null;
+
+}
 }

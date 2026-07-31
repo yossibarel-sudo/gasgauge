@@ -211,6 +211,21 @@ export class BBQSessionService {
 
   }
 
+  static betweenDates(
+  installationId: string,
+  from: Date,
+  to: Date
+): BBQSession[] {
+
+  return this.load()
+    .filter(session =>
+      session.installationId === installationId &&
+      session.date >= from &&
+      session.date <= to
+    );
+
+}
+
   static clear(): void {
 
     localStorage.removeItem(

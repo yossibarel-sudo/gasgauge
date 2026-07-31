@@ -1,3 +1,6 @@
+import type { Measurement } from "../models/Measurement";
+import { BBQSessionService } from "./BBQSessionService";
+import { EquipmentService } from "./EquipmentService";
 import type {
   LearningRecord,
   LearningStatistics,
@@ -36,6 +39,118 @@ export class LearningService {
     this.save(records);
   }
 
+  static learnFromMeasurements(
+  previous: Measurement,
+  current: Measurement
+): void {
+
+  if (
+    current.grossWeightKg >=
+    previous.grossWeightKg
+  ) {
+    return;
+  }
+
+  const sessions =
+    BBQSessionService.betweenDates(
+      previous.installationId,
+      previous.date,
+      current.date
+    );
+
+  if (sessions.length === 0) {
+    return;
+  }
+
+  const equipment =
+    EquipmentService.load();
+
+  let cookingHours = 0;
+  let theoreticalGas = 0;
+
+  for (const session of sessions) {
+
+    cookingHours +=
+      session.durationHours;
+
+    const sessionKgPerHour =
+      equipment.burners
+        .filter(burner =>
+          session.burnerIds.includes(
+            burner.id
+          )
+        )
+        .reduce(
+          (sum, burner) =>
+            sum +
+            burner.calculatedKgPerHour,
+          0
+        );
+
+    theoreticalGas +=
+      sessionKgPerHour *
+      session.durationHours;
+
+  }
+
+  if (
+    cookingHours <= 0 ||
+    theoreticalGas <= 0
+  ) {
+    return;
+  }
+
+  const gasConsumedKg =
+    previous.grossWeightKg -
+    current.grossWeightKg;
+
+  const actualKgPerHour =
+    gasConsumedKg /
+    cookingHours;
+
+  const theoreticalKgPerHour =
+    theoreticalGas /
+    cookingHours;
+
+  const correctionFactor =
+    actualKgPerHour /
+    theoreticalKgPerHour;
+
+  if (
+    correctionFactor < 0.5 ||
+    correctionFactor > 1.5
+  ) {
+    return;
+  }
+
+  this.add({
+
+    id: crypto.randomUUID(),
+
+    startMeasurementId:
+      previous.id,
+
+    endMeasurementId:
+      current.id,
+
+    createdAt:
+      new Date(),
+
+    gasConsumedKg,
+
+    cookingHours,
+
+    theoreticalKgPerHour,
+
+    actualKgPerHour,
+
+    correctionFactor,
+
+    ignored: false,
+
+  });
+
+}
   static statistics(): LearningStatistics {
     const records = this.load().filter(
       (record) => !record.ignored
@@ -72,9 +187,9 @@ export class LearningService {
       Math.sqrt(variance);
 
     const confidence = Math.min(
-      100,
-      records.length * 10
-    );
+  100,
+  Math.round(records.length * 5)
+);
 
     return {
       calibrationFactor: averageCorrection,

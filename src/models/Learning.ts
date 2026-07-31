@@ -1,9 +1,12 @@
 export interface LearningRecord {
+
   id: string;
 
   startMeasurementId: string;
 
   endMeasurementId: string;
+
+  createdAt: Date;
 
   gasConsumedKg: number;
 
@@ -15,9 +18,8 @@ export interface LearningRecord {
 
   correctionFactor: number;
 
-  createdAt: Date;
-
   ignored: boolean;
+
 }
 
 export interface LearningStatistics {

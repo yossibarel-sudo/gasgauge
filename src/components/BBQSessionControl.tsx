@@ -18,15 +18,16 @@ import type { AnalysisResult } from "../services/AnalysisService";
 interface Props {
   installationId: string;
   analysis: AnalysisResult;
-  onSessionFinished: () => void;
-  onRequestWeightEntry: () => void;
+ onSessionFinished: (
+  session: BBQSession
+) => void;
+ 
 }
 
 export default function BBQSessionControl({
   installationId,
   analysis,
   onSessionFinished,
-  onRequestWeightEntry,
 }: Props) {
 
   const [activeSession, setActiveSession] =
@@ -91,24 +92,18 @@ export default function BBQSessionControl({
 
   function finishSession() {
 
-    if (burnerIds.length === 0) {
-      alert("Select at least one burner.");
-      return;
-    }
-
+  const session =
     BBQSessionService.finishSession(
       burnerIds
     );
 
-    setActiveSession(null);
+  setActiveSession(null);
 
-setBurnerIds([]);
-
-onSessionFinished();
-
-onRequestWeightEntry();
-
+  if (session) {
+    onSessionFinished(session);
   }
+
+}
 
   const estimatedGas =
     analysis.effectiveKgPerHour != null

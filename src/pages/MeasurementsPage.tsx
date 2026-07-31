@@ -13,7 +13,10 @@ import {
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import WeightDialog from "../components/WeightDialog";
+import { InstallationService } from "../services/InstallationService";
+import { AnalysisService } from "../services/AnalysisService";
+import { EquipmentService } from "../services/EquipmentService";
 import { MeasurementService } from "../services/MeasurementService";
 import { useState } from "react";
 
@@ -38,6 +41,9 @@ export default function MeasurementsPage({
     () => MeasurementService.load()
   );
 
+  const [weightDialogOpen, setWeightDialogOpen] =
+  useState(false);
+
   function deleteMeasurement(id: string) {
     if (
       !window.confirm(
@@ -51,6 +57,60 @@ export default function MeasurementsPage({
 
     setMeasurements(MeasurementService.load());
   }
+
+function saveManualWeight(weight: number) {
+
+  const installation =
+    InstallationService.load();
+
+  const updatedInstallation = {
+    ...installation,
+    currentGrossWeightKg: weight,
+  };
+
+  InstallationService.save(
+    updatedInstallation
+  );
+
+  const analysis =
+    AnalysisService.analyze(
+      updatedInstallation,
+      EquipmentService.load(),
+      MeasurementService.load()
+    );
+
+  const measurement: Measurement = {
+
+    id: crypto.randomUUID(),
+
+    installationId:
+      installation.id,
+
+    date:
+      new Date(),
+
+    grossWeightKg:
+      weight,
+
+    remainingLpgKg:
+      analysis.remainingLpgKg,
+
+    remainingPercent:
+      analysis.remainingPercent,
+
+  };
+
+  MeasurementService.save(
+    measurement
+  );
+
+  setMeasurements(
+    MeasurementService.load()
+  );
+
+  setWeightDialogOpen(false);
+
+}
 
   return (
     <Box
@@ -66,6 +126,23 @@ export default function MeasurementsPage({
       >
         Measurement History
       </Typography>
+
+      <Box
+  sx={{
+    display: "flex",
+    justifyContent: "flex-end",
+    mb: 2,
+  }}
+>
+  <Button
+    variant="contained"
+    onClick={() =>
+      setWeightDialogOpen(true)
+    }
+  >
+    Add Manual Measurement
+  </Button>
+</Box>
 
       <Card>
         <CardContent>
@@ -158,6 +235,20 @@ export default function MeasurementsPage({
           </Box>
         </CardContent>
       </Card>
+
+      <WeightDialog
+  open={weightDialogOpen}
+  previousWeight={
+    InstallationService.load().currentGrossWeightKg
+  }
+  currentWeight={
+    InstallationService.load().currentGrossWeightKg
+  }
+  onCancel={() =>
+    setWeightDialogOpen(false)
+  }
+  onSave={saveManualWeight}
+/>
     </Box>
   );
 }
