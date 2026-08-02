@@ -14,15 +14,19 @@ import {
 
 import { LearningService } from "../services/LearningService";
 
-function formatDate(date: Date): string {
-
-  return date.toLocaleDateString();
-
+interface Props {
+  onBack: () => void;
 }
 
-interface Props {
+function formatDate(date: Date) {
 
-  onBack: () => void;
+  const d =
+    String(date.getDate()).padStart(2,"0");
+
+  const m =
+    String(date.getMonth()+1).padStart(2,"0");
+
+  return `${d}/${m}/${date.getFullYear()}`;
 
 }
 

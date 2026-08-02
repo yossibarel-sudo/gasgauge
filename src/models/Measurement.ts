@@ -17,5 +17,10 @@ export interface Measurement {
    */
   bbqRelated?: boolean;
 
+  measurementType:
+  | "INSTALLATION"
+  | "BBQ"
+  | "MANUAL";
+
   notes?: string;
 }

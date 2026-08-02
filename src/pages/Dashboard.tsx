@@ -138,26 +138,63 @@ const learning =
 
 
   function saveInstallation(
-    newInstallation: Installation
-  ) {
+  newInstallation: Installation
+) {
+  console.log("Saving installation:", newInstallation);
 
-    InstallationService.save(
-      newInstallation
+  InstallationService.save(
+    newInstallation
+  );
+
+  const installationAnalysis =
+    AnalysisService.analyze(
+      newInstallation,
+      equipment,
+      []
     );
 
+  MeasurementService.save({
 
-    setInstallation(
-      newInstallation
-    );
+    id: crypto.randomUUID(),
 
+    installationId:
+      newInstallation.id,
 
-    setShowSaved(true);
+    date:
+      newInstallation.installDate,
 
+    grossWeightKg:
+      newInstallation.initialGrossWeightKg,
 
-    setInstallationDialogOpen(false);
+    remainingLpgKg:
+      installationAnalysis.remainingLpgKg,
 
-  }
+    remainingPercent:
+      installationAnalysis.remainingPercent,
 
+    bbqRelated: false,
+
+    measurementType: "INSTALLATION",
+
+  });
+
+  console.log(
+  MeasurementService.load()
+);
+
+  setInstallation(
+    newInstallation
+  );
+
+  setMeasurements(
+    MeasurementService.load()
+  );
+
+  setShowSaved(true);
+
+  setInstallationDialogOpen(false);
+
+}
 
 
 
@@ -214,6 +251,8 @@ const learning =
   bbqRelated:
     lastSession !== null,
 
+  measurementType: "BBQ",
+
 };
 
 MeasurementService.save(
@@ -221,9 +260,8 @@ MeasurementService.save(
 );
 
 const previousMeasurement =
-  MeasurementService.latestBefore(
-    installation.id,
-    newMeasurement.date
+  MeasurementService.latestForInstallation(
+    installation.id
   );
 
 if (
@@ -621,8 +659,12 @@ if (
       <WeightDialog
   open={weightDialogOpen}
   previousWeight={
-    installation.currentGrossWeightKg
-  }
+  MeasurementService
+    .latestForInstallation(
+      installation.id
+    )?.grossWeightKg ??
+  installation.currentGrossWeightKg
+}
   currentWeight={
     installation.currentGrossWeightKg
   }

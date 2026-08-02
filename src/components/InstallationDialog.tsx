@@ -44,12 +44,23 @@ export default function InstallationDialog({
           value={editedInstallation.installDate
             .toISOString()
             .split("T")[0]}
-          onChange={(e) =>
-            setEditedInstallation({
-              ...editedInstallation,
-              installDate: new Date(e.target.value),
-            })
-          }
+          onChange={(e) => {
+
+  const [year, month, day] =
+    e.target.value
+      .split("-")
+      .map(Number);
+
+  setEditedInstallation({
+    ...editedInstallation,
+    installDate: new Date(
+      year,
+      month - 1,
+      day
+    ),
+  });
+
+}}
           slotProps={{
             inputLabel: {
               shrink: true,

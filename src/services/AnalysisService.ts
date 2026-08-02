@@ -247,26 +247,19 @@ const effectiveKgPerHour =
     // Cylinder age
     //----------------------------------
 
-    const cylinderAgeDays =
+    const install = new Date(installation.installDate);
+install.setHours(0, 0, 0, 0);
 
-      Math.floor(
+const today = new Date();
+today.setHours(0, 0, 0, 0);
 
-        (
-          Date.now() -
-          installation.installDate.getTime()
-
-        ) /
-
-        (
-          1000 *
-          60 *
-          60 *
-          24
-        )
-
-      );
-
-
+const cylinderAgeDays = Math.max(
+  0,
+  Math.floor(
+    (today.getTime() - install.getTime()) /
+    (1000 * 60 * 60 * 24)
+  )
+);
 
 
     //----------------------------------

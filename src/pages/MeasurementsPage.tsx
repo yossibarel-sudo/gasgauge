@@ -19,6 +19,7 @@ import { AnalysisService } from "../services/AnalysisService";
 import { EquipmentService } from "../services/EquipmentService";
 import { MeasurementService } from "../services/MeasurementService";
 import { useState } from "react";
+import WeightHistoryChart from "../components/WeightHistoryChart";
 
 import type { Measurement } from "../models/Measurement";
 
@@ -98,12 +99,15 @@ function saveManualWeight(weight: number) {
     remainingPercent:
       analysis.remainingPercent,
 
+    measurementType: "MANUAL",
+
   };
 
   MeasurementService.save(
     measurement
   );
 
+  
   setMeasurements(
     MeasurementService.load()
   );
@@ -126,6 +130,18 @@ function saveManualWeight(weight: number) {
       >
         Measurement History
       </Typography>
+
+      <Card sx={{ mb:3 }}>
+
+  <CardContent>
+
+    <WeightHistoryChart
+      measurements={measurements}
+    />
+
+  </CardContent>
+
+</Card>
 
       <Box
   sx={{
@@ -157,6 +173,7 @@ function saveManualWeight(weight: number) {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell>Type</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell align="right">
                     Weight (kg)
@@ -177,6 +194,16 @@ function saveManualWeight(weight: number) {
                 {measurements.map(
                   (measurement) => (
                     <TableRow key={measurement.id}>
+                      <TableCell>
+
+  {measurement.measurementType === "INSTALLATION"
+    ? "🟢 New Cylinder"
+    : measurement.measurementType === "BBQ"
+    ? "🔥 BBQ"
+    : "⚪ Manual"}
+
+</TableCell>
+                      
                       <TableCell>
                         {formatDate(
                           measurement.date

@@ -13,10 +13,21 @@ export class MeasurementService {
     const measurements = JSON.parse(json) as Measurement[];
 
     return measurements
-      .map((measurement) => ({
-        ...measurement,
-        date: new Date(measurement.date),
-      }))
+  .map((measurement) => ({
+
+    ...measurement,
+
+    bbqRelated:
+      measurement.bbqRelated ?? false,
+
+    measurementType:
+      measurement.measurementType ??
+      "MANUAL",
+
+    date:
+      new Date(measurement.date),
+
+  }))
       .sort(
         (a, b) => b.date.getTime() - a.date.getTime()
       );
@@ -59,6 +70,26 @@ export class MeasurementService {
 
     return measurements[0];
   }
+
+  static latestForInstallation(
+  installationId: string
+): Measurement | null {
+
+  const measurements =
+    this.load()
+      .filter(
+        m =>
+          m.installationId ===
+          installationId
+      );
+
+  if (measurements.length === 0) {
+    return null;
+  }
+
+  return measurements[0];
+
+}
 
   static latestBefore(
   installationId: string,
