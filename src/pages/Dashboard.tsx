@@ -255,14 +255,15 @@ const learning =
 
 };
 
+const previousMeasurement =
+    MeasurementService.latestBefore(
+        installation.id,
+        newMeasurement.date
+    );
+
 MeasurementService.save(
   newMeasurement
 );
-
-const previousMeasurement =
-  MeasurementService.latestForInstallation(
-    installation.id
-  );
 
 if (
   previousMeasurement &&

@@ -43,6 +43,20 @@ export interface AnalysisResult {
     | "LOW"
     | "CRITICAL";
 
+  totalSessions: number;
+
+  totalGasConsumedKg: number;
+
+  averageGasPerSessionKg: number;
+
+  averageGasPerHourKg: number;
+
+  averageGasPerDayKg: number;
+
+  estimatedCylinderLifetimeDays: number;
+
+  consumptionTrend: "UP" | "DOWN" | "STABLE";
+
 }
 
 
@@ -139,6 +153,31 @@ const completedSessions =
       session.estimatedGasUsedKg > 0
   );
 
+  let consumptionTrend: "UP" | "DOWN" | "STABLE" = "STABLE";
+
+if (completedSessions.length >= 6) {
+    const recent =
+        completedSessions
+            .slice(-3)
+            .reduce(
+                (sum, s) => sum + s.estimatedGasUsedKg,
+                0
+            ) / 3;
+
+    const previous =
+        completedSessions
+            .slice(-6, -3)
+            .reduce(
+                (sum, s) => sum + s.estimatedGasUsedKg,
+                0
+            ) / 3;
+
+    if (recent > previous * 1.10)
+        consumptionTrend = "UP";
+    else if (recent < previous * 0.90)
+        consumptionTrend = "DOWN";
+}
+
 const totalCookingHours =
   completedSessions.reduce(
     (sum, session) =>
@@ -152,6 +191,18 @@ const totalEstimatedGasUsedKg =
       sum + session.estimatedGasUsedKg,
     0
   );
+
+  const totalSessions = completedSessions.length;
+
+const averageGasPerSessionKg =
+  totalSessions > 0
+    ? totalEstimatedGasUsedKg / totalSessions
+    : 0;
+
+const averageGasPerHourKg =
+  totalCookingHours > 0
+    ? totalEstimatedGasUsedKg / totalCookingHours
+    : 0;
 
 const averageSessionHours =
   completedSessions.length > 0
@@ -261,6 +312,15 @@ const cylinderAgeDays = Math.max(
   )
 );
 
+const averageGasPerDayKg =
+  cylinderAgeDays > 0
+    ? gasUsedKg / cylinderAgeDays
+    : 0;
+
+const estimatedCylinderLifetimeDays =
+  averageGasPerDayKg > 0
+    ? installation.cylinderCapacityKg / averageGasPerDayKg
+    : 0;
 
     //----------------------------------
     // Status
@@ -329,6 +389,20 @@ const cylinderAgeDays = Math.max(
       averageSessionHours,
 
       status,
+
+      totalSessions,
+
+      totalGasConsumedKg: gasUsedKg,
+
+      averageGasPerSessionKg,
+
+      averageGasPerHourKg,
+
+      averageGasPerDayKg,
+
+      estimatedCylinderLifetimeDays,
+
+      consumptionTrend,
 
     };
 
