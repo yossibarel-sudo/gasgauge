@@ -1,266 +1,208 @@
-# GasGauge - Project Status
+# GasGauge Project Status
 
-**Last Updated:** 25 July 2026
-**Project:** GasGauge
-**Platform:** React + TypeScript + Vite + Material UI
-**Current Sprint:** Sprint 2.7
-**Overall Progress:** ~75%
+**Last Updated:** 02-Aug-2026
 
 ---
 
-# Project Goal
+# Current Sprint
 
-GasGauge predicts the remaining LPG in a cylinder from weight measurements,
-equipment configuration and real cooking history.
+## Sprint 2.0 ✅ COMPLETED
 
-Unlike simple gas calculators, GasGauge continuously improves its prediction
-accuracy by learning from actual user behaviour.
+Core LPG calculation engine, learning engine and measurement workflow are now operational.
+
+Overall Progress: ~70%
 
 ---
 
 # Completed
 
-## Core Architecture
-
-✔ React + TypeScript + Vite
-
-✔ Material UI
-
-✔ LocalStorage persistence
-
-✔ Modular services
-
-✔ Strong TypeScript models
-
----
-
-## Dashboard
-
-✔ Remaining LPG
-
-✔ Remaining %
-
-✔ Cylinder status
-
-✔ Remaining cooking hours
-
-✔ Remaining BBQ sessions
-
-✔ Current weight
-
-✔ Cylinder age
-
-✔ Measurements count
-
-✔ Traffic-light status
-
-✔ Adaptive consumption display
+## Project Foundation
+- React + TypeScript + Vite
+- Material UI
+- LocalStorage persistence
+- Multi-page navigation
+- Domain Model established
 
 ---
 
 ## Equipment
-
-✔ Manufacturer
-
-✔ Model
-
-✔ Dynamic burner list
-
-✔ Supports 1–6 burners
-
-✔ Add burner
-
-✔ Remove burner
-
-✔ Automatic kg/h calculation
-
-✔ Default session duration
+- Equipment setup page
+- Up to 6 burners
+- Supported units:
+  - W
+  - kW
+  - BTU/h
+  - g/h
+  - kg/h
+- Automatic conversion to kg/h
 
 ---
 
 ## Cylinder Installation
-
-✔ Install new cylinder
-
-✔ Installation date
-
-✔ Initial weight
-
-✔ Empty cylinder weight
-
-✔ Cylinder capacity
+- New cylinder installation dialog
+- Installation date
+- Cylinder capacity
+- Empty cylinder weight
+- Initial gross weight
+- Automatic current weight initialization
+- New Installation ID for every cylinder
+- Installation measurement automatically created
 
 ---
 
-## Measurements
-
-✔ Weight history
-
-✔ Current weight update
-
-✔ Measurement history
+## Dashboard
+- Remaining LPG
+- Remaining %
+- Cylinder status
+- Cylinder age
+- Current weight
+- Cooking prediction
+- Remaining cooking hours
+- Remaining BBQ sessions
+- Learning confidence
+- Actual/Theoretical consumption
+- Status indication
+- Snackbar notifications
 
 ---
 
 ## BBQ Sessions
-
-✔ BBQ session history
-
-✔ Manual session entry
-
-✔ Live Start Cooking
-
-✔ Live Finish Cooking
-
-✔ Running timer
-
-✔ Burners used selection
-
-✔ Estimated LPG consumption
-
-✔ Active session recovery after browser refresh
+- Start session
+- Stop session
+- Running timer
+- Multiple burner selection
+- Individual burner tracking
+- Estimated gas consumption
+- Session history
+- Automatic session reset after cylinder replacement
 
 ---
 
-## Analysis Engine
-
-✔ Remaining LPG calculation
-
-✔ Remaining percentage
-
-✔ Gas consumed
-
-✔ Theoretical burner consumption
-
-✔ BBQ history analysis
-
-✔ Effective consumption calculation
-
-✔ Actual consumption
-
-✔ Remaining cooking prediction
-
-✔ Remaining BBQ prediction
-
-✔ Efficiency calculation
+## Measurements
+- Automatic BBQ measurements
+- Manual measurements
+- Installation measurements
+- Measurement history
+- Delete measurements
+- Measurement chart
+- Measurement type:
+  - Installation
+  - BBQ
+  - Manual
 
 ---
 
-## Navigation
-
-✔ Dashboard
-
-✔ Equipment
-
-✔ Measurements
-
-✔ BBQ Sessions
-
-✔ Consistent Back to Dashboard button
+## Learning Engine
+- Learns only from BBQ related measurements
+- Uses:
+  - Weight difference
+  - Session duration
+  - Individual burners used
+- Calculates:
+  - Actual kg/h
+  - Correction factor
+  - Confidence
+- Ignores invalid measurements
+- Stores calibration history
+- Learning History page
 
 ---
 
-# Current Data Model
+## Data Validation
+- Reject impossible learning records
+- Manual weight validation
+- New cylinder becomes new weight reference
+- Measurement type support
+- BBQ-only learning
+
+---
+
+# Current Architecture
+
+Dashboard
+
+↓
 
 Installation
 
-Equipment
+↓
 
-Burner
+BBQ Sessions
+
+↓
+
+Cylinder Weight
+
+↓
 
 Measurement
 
-BBQSession
+↓
+
+Learning Engine
+
+↓
+
+Prediction
 
 ---
 
-# Current Services
+# Known Minor Issues
 
-AnalysisService
-
-EquipmentService
-
-InstallationService
-
-MeasurementService
-
-BBQSessionService
-
-BurnerCalculationService
+- Cylinder age occasionally affected by timezone when installation date is today (planned fix using local date calculation)
+- Improve date handling throughout project to avoid timezone edge cases
 
 ---
 
-# Next Sprint (2.8)
+# Sprint 3.0 (Next)
 
-## Adaptive Learning Engine
+## Priority 1
+- Consumption trends
+- Learning statistics improvements
+- Dashboard analytics cards
 
-Instead of assuming burners always consume their theoretical gas rate,
-GasGauge will continuously learn from completed cylinders.
+## Priority 2
+- Better prediction graphs
+- Cylinder lifetime statistics
+- Average gas consumption charts
 
-Planned features:
-
-- Learn correction factor from completed cylinders
-- Automatically calibrate burner model
-- Improve future gas predictions
-- Confidence score for predictions
-- Ignore abnormal cooking sessions
-- Display "Prediction Confidence" on Dashboard
+## Priority 3
+- Data export/import
+- Backup & restore
+- Settings page
 
 ---
 
-# Future Roadmap
+# Long-Term Roadmap
 
-Sprint 2.9
-
-- Cooking Profiles
-    - Fast cooking
-    - Normal cooking
-    - Low flame
-    - BBQ profile
-
-Sprint 3.0
-
-- Charts
-- Trend graphs
-- Cylinder comparison
-- Usage analytics
-
-Sprint 3.1
-
+Sprint 4
 - PWA improvements
-- Export / Import
-- Cloud backup
+- Offline enhancements
+- Installable application
 
-Sprint 3.2
-
-- OCR weight reading from scale display
-- OCR gas meter reading
-- AI cooking insights
-
----
-
-# Known Issues
-
-None
-
-Project builds successfully.
-
-TypeScript clean.
-
-Application stable.
+Sprint 5
+- OCR from cylinder scale display
+- Camera-assisted workflows
+- Advanced analytics
 
 ---
 
-# Current Git Tag
+# Design Decisions
 
-Sprint 2.7 Stable
+✓ AnalysisService is the single calculation engine
 
----
+✓ Learning is based only on BBQ sessions
 
-# Overall Assessment
+✓ Learning is independent of cylinder replacement
 
-Project structure is now stable.
+✓ Every cylinder installation starts a new learning sequence
 
-The core prediction engine is operational.
+✓ Manual measurements never affect learning
 
-Future work is focused primarily on improving prediction accuracy rather than architectural changes.
+✓ Individual burners are tracked
+
+✓ Measurement history is permanent
+
+✓ BBQ history resets for each cylinder
+
+✓ LocalStorage remains the storage backend
