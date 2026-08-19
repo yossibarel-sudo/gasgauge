@@ -42,6 +42,10 @@ function createDefaultSession(
 
     durationHours: 1,
 
+    burnerIds: [],
+
+    estimatedGasUsedKg: 0,
+
     notes: "",
 
   };

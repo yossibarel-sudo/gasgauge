@@ -43,19 +43,24 @@ export interface AnalysisResult {
     | "LOW"
     | "CRITICAL";
 
-  totalSessions: number;
+  
+  // ----------------------------------------------------
+  // Analytics
+  // ----------------------------------------------------
 
-  totalGasConsumedKg: number;
+   totalSessions: number;
 
-  averageGasPerSessionKg: number;
+   totalGasConsumedKg: number;
 
-  averageGasPerHourKg: number;
+   averageGasPerSessionKg: number;
 
-  averageGasPerDayKg: number;
+   averageGasPerHourKg: number;
 
-  estimatedCylinderLifetimeDays: number;
+   averageGasPerDayKg: number;
 
-  consumptionTrend: "UP" | "DOWN" | "STABLE";
+   estimatedCylinderLifetimeDays: number;
+
+   consumptionTrend: "UP" | "DOWN" | "STABLE";
 
 }
 
@@ -192,7 +197,11 @@ const totalEstimatedGasUsedKg =
     0
   );
 
-  const totalSessions = completedSessions.length;
+  // ----------------------------------------------------
+  // Analytics
+  // ----------------------------------------------------
+
+const totalSessions = completedSessions.length;
 
 const averageGasPerSessionKg =
   totalSessions > 0
@@ -203,6 +212,7 @@ const averageGasPerHourKg =
   totalCookingHours > 0
     ? totalEstimatedGasUsedKg / totalCookingHours
     : 0;
+
 
 const averageSessionHours =
   completedSessions.length > 0
@@ -234,16 +244,16 @@ if (
       theoreticalKgPerHour
     : null;
 
-const usingActualConsumption =
-  learningFactor !== null;
+    const usingActualConsumption =
+     learningFactor !== null;
 
-const learning = LearningService.statistics();
+    const learning = LearningService.statistics();
 
-const baseKgPerHour =
-  actualKgPerHour ?? theoreticalKgPerHour;
+    const baseKgPerHour =
+     actualKgPerHour ?? theoreticalKgPerHour;
 
-const effectiveKgPerHour =
-  baseKgPerHour * learning.calibrationFactor;
+    const effectiveKgPerHour =
+     baseKgPerHour * learning.calibrationFactor;
 
 
     //----------------------------------
@@ -299,26 +309,26 @@ const effectiveKgPerHour =
     //----------------------------------
 
     const install = new Date(installation.installDate);
-install.setHours(0, 0, 0, 0);
+     install.setHours(0, 0, 0, 0);
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+    const today = new Date();
+     today.setHours(0, 0, 0, 0);
 
-const cylinderAgeDays = Math.max(
-  0,
-  Math.floor(
+    const cylinderAgeDays = Math.max(
+     0,
+     Math.floor(
     (today.getTime() - install.getTime()) /
     (1000 * 60 * 60 * 24)
   )
 );
 
-const averageGasPerDayKg =
-  cylinderAgeDays > 0
+    const averageGasPerDayKg =
+     cylinderAgeDays > 0
     ? gasUsedKg / cylinderAgeDays
     : 0;
 
-const estimatedCylinderLifetimeDays =
-  averageGasPerDayKg > 0
+    const estimatedCylinderLifetimeDays =
+     averageGasPerDayKg > 0
     ? installation.cylinderCapacityKg / averageGasPerDayKg
     : 0;
 
@@ -389,6 +399,8 @@ const estimatedCylinderLifetimeDays =
       averageSessionHours,
 
       status,
+
+     // Analytics
 
       totalSessions,
 

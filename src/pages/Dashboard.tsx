@@ -39,6 +39,8 @@ interface DashboardProps {
 
   onLearning: () => void;
 
+  onStatistics: () => void;
+
 }
 
 
@@ -72,6 +74,8 @@ export default function Dashboard({
   onBBQSessions,
 
   onLearning,
+  
+  onStatistics,
 
 }: DashboardProps) {
 
@@ -424,14 +428,12 @@ if (
 
         <MetricCard
           title="Measurements"
-          value={
-            measurements.length
-          }
+          value={measurements.length}
         />
 
         <MetricCard
-          title="Learning Samples"
-          value={learning.completedCylinders.toString()}
+          title="Avg Consumption"
+          value={`${analysis.averageGasPerHourKg.toFixed(3)} kg/h`}
         />
 
 
@@ -450,7 +452,6 @@ if (
       </Box>
 
 
-
       {
         analysis.status === "LOW" && (
 
@@ -463,7 +464,6 @@ if (
 
         )
       }
-
 
 
       {
@@ -555,6 +555,31 @@ if (
   value={`${learning.confidence}%`}
 />
 
+<InfoRow
+  label="Average Gas / Session"
+  value={`${analysis.averageGasPerSessionKg.toFixed(3)} kg`}
+/>
+
+<InfoRow
+  label="Estimated Cylinder Lifetime"
+  value={
+    analysis.estimatedCylinderLifetimeDays > 0
+      ? `${analysis.estimatedCylinderLifetimeDays.toFixed(0)} days`
+      : "--"
+  }
+/>
+
+<InfoRow
+  label="Consumption Trend"
+  value={
+    analysis.consumptionTrend === "UP"
+      ? "Increasing ↑"
+      : analysis.consumptionTrend === "DOWN"
+      ? "Decreasing ↓"
+      : "Stable →"
+  }
+/>
+
   <TableRow>
     <TableCell colSpan={2}>
       <LinearProgress
@@ -625,6 +650,14 @@ if (
           onClick={onLearning}
         >
          Learning History
+        </Button>
+
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={onStatistics}
+       >
+        Statistics
         </Button>
 
 
