@@ -12,6 +12,12 @@ import {
   TableBody,
   Typography,
   LinearProgress,
+  Card,
+  CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 
 import BBQSessionControl from "../components/BBQSessionControl";
@@ -121,6 +127,9 @@ const learning =
     setInstallationDialogOpen,
   ] =
     useState(false);
+
+  const [calibrationDialogOpen, setCalibrationDialogOpen] =
+  useState(false);
 
 
 
@@ -605,7 +614,47 @@ if (
       </Paper>
 
 
+    {analysis.calibrationRecommended && (
+  <Card sx={{ mb: 3 }}>
+    <CardContent>
+      <Typography
+        variant="h6"
+        gutterBottom
+      >
+        Calibration Recommendation
+      </Typography>
 
+      <Typography sx={{ mb: 2 }}>
+        Measured consumption differs from the
+        configured consumption by{" "}
+        {Math.abs(
+          analysis.calibrationDeviationPercent
+        ).toFixed(1)}
+        %.
+      </Typography>
+
+      <Typography sx={{ mb: 2 }}>
+        Recommended consumption:{" "}
+        <strong>
+          {analysis.recommendedKgPerHour !== null
+            ? `${analysis.recommendedKgPerHour.toFixed(
+                3
+              )} kg/h`
+            : "--"}
+        </strong>
+      </Typography>
+
+      <Button
+        variant="contained"
+        onClick={() =>
+          setCalibrationDialogOpen(true)
+        }
+      >
+        Review Recommendation
+      </Button>
+    </CardContent>
+  </Card>
+)}
 
       <Box
         sx={{
@@ -720,7 +769,67 @@ if (
   onSave={saveWeight}
 />
 
+<Dialog
+  open={calibrationDialogOpen}
+  onClose={() =>
+    setCalibrationDialogOpen(false)
+  }
+>
+  <DialogTitle>
+    Update Equipment Calibration?
+  </DialogTitle>
 
+  <DialogContent>
+    <Typography>
+      The measured gas consumption differs from
+      the configured consumption by{" "}
+      {Math.abs(
+        analysis.calibrationDeviationPercent
+      ).toFixed(1)}
+      %.
+    </Typography>
+
+    <Typography sx={{ mt: 2 }}>
+      Recommended value:
+    </Typography>
+
+    <Typography variant="h6">
+      {analysis.recommendedKgPerHour !== null
+        ? `${analysis.recommendedKgPerHour.toFixed(
+            3
+          )} kg/h`
+        : "--"}
+    </Typography>
+  </DialogContent>
+
+  <DialogActions>
+    <Button
+      onClick={() =>
+        setCalibrationDialogOpen(false)
+      }
+    >
+      Keep Current
+    </Button>
+
+    <Button
+  variant="contained"
+  onClick={() => {
+    if (
+      analysis.calibrationFactor > 0
+    ) {
+      EquipmentService.applyCalibration(
+        analysis.calibrationFactor
+      );
+    }
+
+    setCalibrationDialogOpen(false);
+  }}
+>
+  Update
+</Button>
+
+  </DialogActions>
+</Dialog>
 
       <Snackbar
         open={showSaved}

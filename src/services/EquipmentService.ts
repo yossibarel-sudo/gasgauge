@@ -15,6 +15,31 @@ export class EquipmentService {
   }
 
   static save(equipment: Equipment): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(equipment));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(equipment)
+    );
+  }
+
+  static applyCalibration(
+    calibrationFactor: number
+  ): Equipment {
+    const equipment = this.load();
+
+    const calibratedEquipment: Equipment = {
+      ...equipment,
+      burners: equipment.burners.map(
+        (burner) => ({
+          ...burner,
+          calculatedKgPerHour:
+            burner.calculatedKgPerHour *
+            calibrationFactor,
+        })
+      ),
+    };
+
+    this.save(calibratedEquipment);
+
+    return calibratedEquipment;
   }
 }
