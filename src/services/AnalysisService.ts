@@ -3,6 +3,7 @@ import type { Installation } from "../models/Installation";
 import type { Measurement } from "../models/Measurement";
 import { BBQSessionService } from "./BBQSessionService";
 import { LearningService } from "./LearningService";
+import { EquipmentService } from "./EquipmentService";
 
 export interface AnalysisResult {
 
@@ -62,6 +63,7 @@ export interface AnalysisResult {
 
    consumptionTrend: "UP" | "DOWN" | "STABLE";
 
+   consumptionTrendPercent: number;
    calibrationRecommended: boolean;
    calibrationDeviationPercent: number;
    recommendedKgPerHour: number | null;
@@ -162,29 +164,37 @@ const completedSessions =
       session.estimatedGasUsedKg > 0
   );
 
-  let consumptionTrend: "UP" | "DOWN" | "STABLE" = "STABLE";
+  let consumptionTrend: "UP" | "DOWN" | "STABLE" =
+  "STABLE";
+
+let consumptionTrendPercent = 0;
 
 if (completedSessions.length >= 6) {
-    const recent =
-        completedSessions
-            .slice(-3)
-            .reduce(
-                (sum, s) => sum + s.estimatedGasUsedKg,
-                0
-            ) / 3;
+  const recent =
+    completedSessions
+      .slice(-3)
+      .reduce(
+        (sum, s) => sum + s.estimatedGasUsedKg,
+        0
+      ) / 3;
 
-    const previous =
-        completedSessions
-            .slice(-6, -3)
-            .reduce(
-                (sum, s) => sum + s.estimatedGasUsedKg,
-                0
-            ) / 3;
+  const previous =
+    completedSessions
+      .slice(-6, -3)
+      .reduce(
+        (sum, s) => sum + s.estimatedGasUsedKg,
+        0
+      ) / 3;
 
-    if (recent > previous * 1.10)
-        consumptionTrend = "UP";
-    else if (recent < previous * 0.90)
-        consumptionTrend = "DOWN";
+  if (previous > 0) {
+    consumptionTrendPercent =
+      ((recent - previous) / previous) * 100;
+  }
+
+  if (recent > previous * 1.10)
+    consumptionTrend = "UP";
+  else if (recent < previous * 0.90)
+    consumptionTrend = "DOWN";
 }
 
 const totalCookingHours =
@@ -253,11 +263,9 @@ if (
 
     const learning = LearningService.statistics();
 
-    const baseKgPerHour =
-     actualKgPerHour ?? theoreticalKgPerHour;
-
     const effectiveKgPerHour =
-     baseKgPerHour * learning.calibrationFactor;
+  theoreticalKgPerHour *
+  learning.calibrationFactor;
 
      //--------------------------------------------------
      // Adaptive Calibration Recommendation
@@ -271,9 +279,20 @@ const learningRecords =
 const calibrationDeviationPercent =
   (learning.calibrationFactor - 1) * 100;
 
+const appliedCalibrationFactor =
+  EquipmentService.getAppliedCalibrationFactor();
+
+const calibrationAlreadyApplied =
+  appliedCalibrationFactor !== null &&
+  Math.abs(
+    appliedCalibrationFactor -
+      learning.calibrationFactor
+  ) < 0.0001;
+
 const calibrationRecommended =
   learningRecords.length >= 3 &&
-  Math.abs(calibrationDeviationPercent) > 10;
+  Math.abs(calibrationDeviationPercent) > 10 &&
+  !calibrationAlreadyApplied;
 
 const recommendedKgPerHour =
   calibrationRecommended &&
@@ -442,6 +461,7 @@ const recommendedKgPerHour =
       estimatedCylinderLifetimeDays,
 
       consumptionTrend,
+      consumptionTrendPercent,
 
       calibrationRecommended,
       calibrationDeviationPercent,

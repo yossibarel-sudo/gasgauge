@@ -2,6 +2,7 @@ import type { Equipment } from "../models/Equipment";
 import { defaultEquipment } from "./defaultEquipment";
 
 const STORAGE_KEY = "gasgauge-equipment";
+const CALIBRATION_KEY = "gasgauge-calibration-factor";
 
 export class EquipmentService {
   static load(): Equipment {
@@ -28,9 +29,11 @@ export class EquipmentService {
 
     const calibratedEquipment: Equipment = {
       ...equipment,
+
       burners: equipment.burners.map(
         (burner) => ({
           ...burner,
+
           calculatedKgPerHour:
             burner.calculatedKgPerHour *
             calibrationFactor,
@@ -40,6 +43,29 @@ export class EquipmentService {
 
     this.save(calibratedEquipment);
 
+    localStorage.setItem(
+      CALIBRATION_KEY,
+      String(calibrationFactor)
+    );
+
     return calibratedEquipment;
+  }
+
+  static getAppliedCalibrationFactor():
+    number | null {
+    const value =
+      localStorage.getItem(
+        CALIBRATION_KEY
+      );
+
+    if (value === null) {
+      return null;
+    }
+
+    const factor = Number(value);
+
+    return Number.isFinite(factor)
+      ? factor
+      : null;
   }
 }

@@ -259,6 +259,82 @@ export default function StatisticsPage({
       </Card>
 
       <Card sx={{ mb: 3 }}>
+  <CardContent>
+    <Typography
+      variant="h6"
+      gutterBottom
+    >
+      Current Prediction
+    </Typography>
+
+    <Table>
+      <TableBody>
+        <TableRow>
+          <TableCell>
+            Remaining LPG
+          </TableCell>
+          <TableCell align="right">
+            {analysis.remainingLpgKg.toFixed(2)} kg
+          </TableCell>
+        </TableRow>
+
+        <TableRow>
+  <TableCell>
+    Consumption Rate
+  </TableCell>
+
+  <TableCell align="right">
+    {analysis.effectiveKgPerHour !== null
+      ? `${analysis.effectiveKgPerHour.toFixed(3)} kg/h`
+      : "--"}
+
+    <Typography
+      variant="body2"
+      color="text.secondary"
+    >
+      {analysis.usingActualConsumption
+        ? "Based on learned consumption"
+        : "Based on equipment specification"}
+    </Typography>
+  </TableCell>
+</TableRow>
+
+        <TableRow>
+          <TableCell>
+            Remaining Cooking Hours
+          </TableCell>
+          <TableCell align="right">
+            {analysis.remainingHours !== null
+              ? `${analysis.remainingHours.toFixed(1)} h`
+              : "--"}
+          </TableCell>
+        </TableRow>
+
+        <TableRow>
+          <TableCell>
+            Remaining BBQ Sessions
+          </TableCell>
+          <TableCell align="right">
+            {analysis.remainingSessions !== null
+              ? analysis.remainingSessions.toFixed(1)
+              : "--"}
+          </TableCell>
+        </TableRow>
+
+        <TableRow>
+          <TableCell>
+            Prediction Confidence
+          </TableCell>
+          <TableCell align="right">
+            {analysis.predictionConfidence}%
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  </CardContent>
+</Card>
+
+      <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography
             variant="h6"
@@ -307,20 +383,32 @@ export default function StatisticsPage({
               </TableRow>
 
               <TableRow>
-                <TableCell>
-                  Consumption Trend
-                </TableCell>
+  <TableCell>
+    Consumption Trend
+  </TableCell>
 
-                <TableCell align="right">
-                  {analysis.consumptionTrend ===
-                  "UP"
-                    ? "Increasing ↑"
-                    : analysis.consumptionTrend ===
-                      "DOWN"
-                    ? "Decreasing ↓"
-                    : "Stable →"}
-                </TableCell>
-              </TableRow>
+  <TableCell align="right">
+    <Typography variant="body1">
+      {analysis.consumptionTrend === "UP"
+        ? "Increasing"
+        : analysis.consumptionTrend === "DOWN"
+          ? "Decreasing"
+          : "Stable"}
+    </Typography>
+
+    {analysis.consumptionTrend !== "STABLE" && (
+      <Typography
+        variant="body2"
+        color="text.secondary"
+      >
+        {Math.abs(
+          analysis.consumptionTrendPercent
+        ).toFixed(1)}
+        % compared with previous sessions
+      </Typography>
+    )}
+  </TableCell>
+</TableRow>
             </TableBody>
           </Table>
         </CardContent>
