@@ -1,16 +1,12 @@
 # GasGauge Project Status
 
-**Last Updated:** 02-Aug-2026
+**Last Updated:** 21-Aug-2026
 
 ---
 
 # Current Sprint
 
-## Sprint 2.0 ✅ COMPLETED
-
-Core LPG calculation engine, learning engine and measurement workflow are now operational.
-
-Overall Progress: ~70%
+Sprint 3.0 ✅ COMPLETED
 
 ---
 
@@ -154,17 +150,55 @@ Prediction
 
 ---
 
-# Sprint 3.0 (Next)
+# Sprint 3.0 — Analytics & Prediction ✅ COMPLETED
 
-## Priority 1
-- Consumption trends
-- Learning statistics improvements
-- Dashboard analytics cards
+## Analytics
 
-## Priority 2
-- Better prediction graphs
-- Cylinder lifetime statistics
-- Average gas consumption charts
+- Average gas consumption (kg/h)
+- Average gas consumption per BBQ session
+- Last 7 days consumption
+- Last 30 days consumption
+- Consumption history chart
+- Consumption trend:
+  - Increasing
+  - Decreasing
+  - Stable
+- Trend percentage compared with previous sessions
+- Cylinder lifetime estimate
+
+## Prediction
+
+- Remaining LPG prediction
+- Remaining cooking hours
+- Remaining BBQ sessions
+- Effective consumption rate
+- Prediction confidence
+- Distinction between:
+  - Equipment specification
+  - Learned consumption
+
+## Adaptive Calibration
+
+- Calibration recommendation after sufficient learning data
+- Deviation calculation
+- User confirmation required
+- Equipment consumption updated after confirmation
+- Calibration state persisted
+- Repeated calibration cannot incrementally modify burner consumption
+
+## Validation
+
+- Manual measurements do not affect learning
+- BBQ sessions are used for learning
+- New cylinder starts a new learning sequence
+- Historical learning data is preserved
+- Invalid learning records are ignored
+
+## Build Status
+
+- TypeScript compilation: ✅
+- Vite production build: ✅
+- Application runs successfully: ✅
 
 ## Priority 3
 - Data export/import
