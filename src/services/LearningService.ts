@@ -1,3 +1,4 @@
+import { STORAGE_KEYS } from "../constants/storageKeys";
 import type { Measurement } from "../models/Measurement";
 import { BBQSessionService } from "./BBQSessionService";
 import { EquipmentService } from "./EquipmentService";
@@ -6,11 +7,10 @@ import type {
   LearningStatistics,
 } from "../models/Learning";
 
-const STORAGE_KEY = "gasgauge_learning";
 
 export class LearningService {
   static load(): LearningRecord[] {
-    const json = localStorage.getItem(STORAGE_KEY);
+    const json = localStorage.getItem(STORAGE_KEYS.learning);
 
     if (!json) {
       return [];
@@ -26,7 +26,7 @@ export class LearningService {
 
   static save(data: LearningRecord[]): void {
     localStorage.setItem(
-      STORAGE_KEY,
+      STORAGE_KEYS.learning,
       JSON.stringify(data)
     );
   }

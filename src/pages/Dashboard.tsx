@@ -26,6 +26,7 @@ import WeightDialog from "../components/WeightDialog";
 import MetricCard from "../components/MetricCard";
 import InfoRow from "../components/InfoRow";
 
+import { BackupService } from "../services/BackupService";
 import { AnalysisService } from "../services/AnalysisService";
 import { InstallationService } from "../services/InstallationService";
 import { MeasurementService } from "../services/MeasurementService";
@@ -209,6 +210,43 @@ const learning =
 
 }
 
+
+function restoreBackup(
+  event: React.ChangeEvent<HTMLInputElement>
+) {
+  const file = event.target.files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      const backup = JSON.parse(
+        reader.result as string
+      );
+
+      BackupService.restoreBackup(backup);
+
+      window.location.reload();
+    } catch (error) {
+      console.error(
+        "Failed to restore backup:",
+        error
+      );
+
+      alert(
+        "Unable to restore backup. The file may be invalid."
+      );
+    }
+  };
+
+  reader.readAsText(file);
+
+  event.target.value = "";
+}
 
 
   function saveWeight(
@@ -727,6 +765,38 @@ if (
 
 
 
+            <Box
+          sx={{
+          display: "flex",
+          gap: 2,
+          mt: 2,
+        }}
+      >
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={() =>
+            BackupService.downloadBackup()
+          }
+        >
+          Export Backup
+        </Button>
+
+        <Button
+          fullWidth
+          variant="outlined"
+          component="label"
+        >
+          Restore Backup
+          <input
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={restoreBackup}
+          />
+        </Button>
+      </Box>
+
 
       <InstallationDialog
         open={installationDialogOpen}
@@ -736,7 +806,6 @@ if (
         }
         onSave={saveInstallation}
       />
-
 
 
       <WeightDialog

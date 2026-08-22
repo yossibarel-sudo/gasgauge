@@ -1,10 +1,9 @@
+import { STORAGE_KEYS } from "../constants/storageKeys";
 import type { Measurement } from "../models/Measurement";
-
-const STORAGE_KEY = "gasgauge-measurements";
 
 export class MeasurementService {
   static load(): Measurement[] {
-    const json = localStorage.getItem(STORAGE_KEY);
+    const json = localStorage.getItem(STORAGE_KEYS.measurements);
 
     if (!json) {
       return [];
@@ -43,7 +42,7 @@ export class MeasurementService {
     );
 
     localStorage.setItem(
-      STORAGE_KEY,
+      STORAGE_KEYS.measurements,
       JSON.stringify(measurements)
     );
   }
@@ -56,7 +55,7 @@ export class MeasurementService {
   );
 
   localStorage.setItem(
-    STORAGE_KEY,
+    STORAGE_KEYS.measurements,
     JSON.stringify(updatedMeasurements)
   );
 }
