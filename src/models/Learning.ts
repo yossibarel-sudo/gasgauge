@@ -1,27 +1,24 @@
 export interface LearningRecord {
-
   id: string;
 
   startMeasurementId: string;
-
   endMeasurementId: string;
 
   createdAt: Date;
 
   gasConsumedKg: number;
-
   cookingHours: number;
 
   theoreticalKgPerHour: number;
-
   actualKgPerHour: number;
 
   correctionFactor: number;
 
+  calibrationFactorAtTime: number;
+
   ignored: boolean;
 
   ignoredReason?: string;
-
 }
 
 export interface LearningStatistics {

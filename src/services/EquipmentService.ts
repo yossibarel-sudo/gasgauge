@@ -3,6 +3,7 @@ import { defaultEquipment } from "./defaultEquipment";
 
 const STORAGE_KEY = "gasgauge-equipment";
 const CALIBRATION_KEY = "gasgauge-calibration-factor";
+const CALIBRATION_DATE_KEY = "gasgauge-calibration-date";
 
 export class EquipmentService {
   static load(): Equipment {
@@ -48,6 +49,11 @@ export class EquipmentService {
       String(calibrationFactor)
     );
 
+    localStorage.setItem(
+      CALIBRATION_DATE_KEY,
+      new Date().toISOString()
+    );
+
     return calibratedEquipment;
   }
 
@@ -67,5 +73,23 @@ export class EquipmentService {
     return Number.isFinite(factor)
       ? factor
       : null;
+  }
+
+  static getCalibrationDate():
+    Date | null {
+    const value =
+      localStorage.getItem(
+        CALIBRATION_DATE_KEY
+      );
+
+    if (value === null) {
+      return null;
+    }
+
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime())
+      ? null
+      : date;
   }
 }

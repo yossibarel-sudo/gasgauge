@@ -3,7 +3,7 @@ import type { Installation } from "../models/Installation";
 import type { Measurement } from "../models/Measurement";
 import { BBQSessionService } from "./BBQSessionService";
 import { LearningService } from "./LearningService";
-import { EquipmentService } from "./EquipmentService";
+
 
 export interface AnalysisResult {
 
@@ -279,20 +279,9 @@ const learningRecords =
 const calibrationDeviationPercent =
   (learning.calibrationFactor - 1) * 100;
 
-const appliedCalibrationFactor =
-  EquipmentService.getAppliedCalibrationFactor();
-
-const calibrationAlreadyApplied =
-  appliedCalibrationFactor !== null &&
-  Math.abs(
-    appliedCalibrationFactor -
-      learning.calibrationFactor
-  ) < 0.0001;
-
 const calibrationRecommended =
   learningRecords.length >= 3 &&
-  Math.abs(calibrationDeviationPercent) > 10 &&
-  !calibrationAlreadyApplied;
+  Math.abs(calibrationDeviationPercent) > 10;
 
 const recommendedKgPerHour =
   calibrationRecommended &&

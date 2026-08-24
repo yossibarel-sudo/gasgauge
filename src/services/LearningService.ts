@@ -42,11 +42,13 @@ export class LearningService {
   static learnFromMeasurements(
   previous: Measurement,
   current: Measurement
-): void 
-{
-//----------------------------------
-// Ignore invalid measurements
-//----------------------------------
+): void {
+  const calibrationFactorAtTime =
+    EquipmentService.getAppliedCalibrationFactor() ?? 1;
+
+  //----------------------------------
+  // Ignore invalid measurements
+  //----------------------------------
 
   if (
   !current.bbqRelated
@@ -65,6 +67,8 @@ export class LearningService {
     endMeasurementId: current.id,
 
     createdAt: new Date(),
+
+    calibrationFactorAtTime,
 
     gasConsumedKg: 0,
 
@@ -106,6 +110,8 @@ export class LearningService {
 
     createdAt: new Date(),
 
+    calibrationFactorAtTime,
+    
     gasConsumedKg: 0,
 
     cookingHours: 0,
@@ -184,6 +190,8 @@ export class LearningService {
 
     createdAt: new Date(),
 
+    calibrationFactorAtTime,
+    
     gasConsumedKg,
 
     cookingHours,
@@ -223,6 +231,8 @@ export class LearningService {
     endMeasurementId: current.id,
 
     createdAt: new Date(),
+
+    calibrationFactorAtTime,
 
     gasConsumedKg,
 
@@ -268,6 +278,8 @@ export class LearningService {
 
     createdAt: new Date(),
 
+    calibrationFactorAtTime,
+    
     gasConsumedKg,
 
     cookingHours,
@@ -302,6 +314,8 @@ export class LearningService {
     createdAt:
       new Date(),
 
+    calibrationFactorAtTime,
+
     gasConsumedKg,
 
     cookingHours,
@@ -318,51 +332,72 @@ export class LearningService {
 
 }
   static statistics(): LearningStatistics {
-    const records = this.load().filter(
-      (record) => !record.ignored
-    );
+  const calibrationDate =
+    EquipmentService.getCalibrationDate();
 
-    if (records.length === 0) {
-      return {
-        calibrationFactor: 1,
-        confidence: 0,
-        completedCylinders: 0,
-        averageCorrection: 1,
-        standardDeviation: 0,
-      };
+  const records = this.load().filter(
+    (record) => {
+      if (record.ignored) {
+        return false;
+      }
+
+      if (calibrationDate === null) {
+        return true;
+      }
+
+      return record.createdAt > calibrationDate;
     }
+  );
 
-    const averageCorrection =
-      records.reduce(
-        (sum, record) => sum + record.correctionFactor,
-        0
-      ) / records.length;
-
-    const variance =
-      records.reduce(
-        (sum, record) =>
-          sum +
-          Math.pow(
-            record.correctionFactor - averageCorrection,
-            2
-          ),
-        0
-      ) / records.length;
-
-    const standardDeviation =
-      Math.sqrt(variance);
-
-    const confidence = Math.min(
-  100,
-  Math.round(records.length * 5)
-);
-
+  if (records.length === 0) {
     return {
-      calibrationFactor: averageCorrection,
-      confidence,
-      completedCylinders: records.length,
-      averageCorrection,
-      standardDeviation,
+      calibrationFactor: 1,
+      confidence: 0,
+      completedCylinders: 0,
+      averageCorrection: 1,
+      standardDeviation: 0,
     };
   }
+
+  const averageCorrection =
+    records.reduce(
+      (sum, record) =>
+        sum + record.correctionFactor,
+      0
+    ) / records.length;
+
+  const variance =
+    records.reduce(
+      (sum, record) =>
+        sum +
+        Math.pow(
+          record.correctionFactor -
+            averageCorrection,
+          2
+        ),
+      0
+    ) / records.length;
+
+  const standardDeviation =
+    Math.sqrt(variance);
+
+  const confidence = Math.min(
+    100,
+    Math.round(records.length * 5)
+  );
+
+  return {
+    calibrationFactor:
+      averageCorrection,
+
+    confidence,
+
+    completedCylinders:
+      records.length,
+
+    averageCorrection,
+
+    standardDeviation,
+  };
+}
 }
