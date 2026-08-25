@@ -271,16 +271,11 @@ if (
      // Adaptive Calibration Recommendation
      //--------------------------------------------------
 
-const learningRecords =
-  LearningService.load().filter(
-    (record) => !record.ignored
-  );
-
 const calibrationDeviationPercent =
   (learning.calibrationFactor - 1) * 100;
 
 const calibrationRecommended =
-  learningRecords.length >= 3 &&
+  learning.completedCylinders >= 3 &&
   Math.abs(calibrationDeviationPercent) > 10;
 
 const recommendedKgPerHour =

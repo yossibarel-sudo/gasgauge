@@ -428,9 +428,9 @@ if (
 
         <Typography color="text.secondary">
   {
-    analysis.usingActualConsumption
-      ? `Using learned consumption (${analysis.actualKgPerHour!.toFixed(3)} kg/h)`
-      : "Using configured burner consumption"
+    analysis.effectiveKgPerHour !== null
+  ? `Using calibrated consumption (${analysis.effectiveKgPerHour.toFixed(3)} kg/h)`
+  : "Using configured burner consumption"
   }
 </Typography>
 

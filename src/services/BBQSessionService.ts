@@ -146,6 +146,29 @@ export class BBQSessionService {
 
   }
 
+  static updateActiveBurners(
+    burnerIds: number[]
+  ): BBQSession | null {
+
+    const active = this.getActiveSession();
+
+    if (!active) {
+      return null;
+    }
+
+    const updated: BBQSession = {
+      ...active,
+      burnerIds,
+    };
+
+    localStorage.setItem(
+      ACTIVE_KEY,
+      JSON.stringify(updated)
+    );
+
+    return updated;
+  }
+
   static finishSession(
     burnerIds: number[]
   ): BBQSession | null {

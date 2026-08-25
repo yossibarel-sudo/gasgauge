@@ -26,7 +26,7 @@ interface Props {
 
 export default function BBQSessionControl({
   installationId,
-  analysis,
+  analysis: _analysis,
   onSessionFinished,
 }: Props) {
 
@@ -36,7 +36,9 @@ export default function BBQSessionControl({
     );
 
   const [burnerIds, setBurnerIds] =
-    useState<number[]>([]);
+    useState<number[]>(
+      BBQSessionService.getActiveSession()?.burnerIds ?? []
+    );
 
   const [, forceRefresh] =
     useState(0);
@@ -84,7 +86,7 @@ export default function BBQSessionControl({
         installationId
       );
 
-    setBurnerIds([]);
+    setBurnerIds(session.burnerIds);
 
     setActiveSession(session);
 
@@ -105,11 +107,18 @@ export default function BBQSessionControl({
 
 }
 
+  const selectedKgPerHour =
+    equipment.burners
+      .filter(burner => burnerIds.includes(burner.id))
+      .reduce(
+        (sum, burner) =>
+          sum + burner.calculatedKgPerHour,
+        0
+      );
+
   const estimatedGas =
-    analysis.effectiveKgPerHour != null
-      ? analysis.effectiveKgPerHour *
-        elapsedHours()
-      : 0;
+    selectedKgPerHour *
+    elapsedHours();
 
   return (
 
@@ -165,22 +174,16 @@ export default function BBQSessionControl({
                       )}
                       onChange={(e) => {
 
-                        if (e.target.checked) {
-
-                          setBurnerIds([
-                            ...burnerIds,
-                            burner.id,
-                          ]);
-
-                        } else {
-
-                          setBurnerIds(
-                            burnerIds.filter(
+                        const nextBurnerIds = e.target.checked
+                          ? [...burnerIds, burner.id]
+                          : burnerIds.filter(
                               id => id !== burner.id
-                            )
-                          );
+                            );
 
-                        }
+                        setBurnerIds(nextBurnerIds);
+                        BBQSessionService.updateActiveBurners(
+                          nextBurnerIds
+                        );
 
                       }}
                     />

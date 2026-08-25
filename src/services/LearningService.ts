@@ -217,10 +217,9 @@ export class LearningService {
     gasConsumedKg /
     cookingHours;
 
-  if (
-  actualKgPerHour < 0.05 ||
-  actualKgPerHour > 2
-) {
+ if (
+  actualKgPerHour < 0.05
+  ) {
 
   this.add({
 
@@ -335,19 +334,42 @@ export class LearningService {
   const calibrationDate =
     EquipmentService.getCalibrationDate();
 
-  const records = this.load().filter(
-    (record) => {
-      if (record.ignored) {
-        return false;
-      }
+  const allRecords =
+    this.load()
+      .sort(
+        (a, b) =>
+          a.createdAt.getTime() -
+          b.createdAt.getTime()
+      );
 
+  // Keep only records belonging to the current
+  // calibration baseline.
+  const activeRecords =
+    allRecords.filter((record) => {
       if (calibrationDate === null) {
         return true;
       }
 
       return record.createdAt > calibrationDate;
+    });
+
+  // Build the current consecutive learning cycle.
+  // An ignored record breaks the cycle.
+  const records: LearningRecord[] = [];
+
+  for (
+    let i = activeRecords.length - 1;
+    i >= 0;
+    i--
+  ) {
+    const record = activeRecords[i];
+
+    if (record.ignored) {
+      break;
     }
-  );
+
+    records.unshift(record);
+  }
 
   if (records.length === 0) {
     return {
