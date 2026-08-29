@@ -86,7 +86,7 @@ export class AnalysisService {
    
   ): AnalysisResult {
 
-
+    void _measurements;
 
     //----------------------------------
     // LPG remaining

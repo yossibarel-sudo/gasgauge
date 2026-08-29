@@ -1,77 +1,124 @@
-# GasGauge follows a "measure first, estimate second" philosophy. Whenever measured data is available, it takes precedence over theoretical calculations. Manufacturer specifications provide the initial estimate, while real measurements continuously improve prediction accuracy over time.
+# GasGauge
 
-# React + TypeScript + Vite
+GasGauge is a Progressive Web App (PWA) for monitoring LPG cylinder usage and predicting remaining cooking time and BBQ sessions.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+GasGauge follows a **measure first, estimate second** philosophy: the equipment configuration provides the initial consumption baseline, while measured cylinder-weight changes and BBQ session history are used to improve predictions through adaptive learning.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- LPG cylinder installation and lifecycle tracking
+- Cylinder weight measurements and history
+- Equipment configuration with up to 6 burners
+- Burner input in W, kW, BTU/h, kg/h, or g/h
+- Automatic conversion to kg/h
+- Live BBQ session tracking with selectable burners
+- Manual BBQ session entry with burner selection
+- Consumption statistics and trends
+- Adaptive learning using measured cylinder-weight consumption
+- 3-session adaptive calibration recommendation when deviation exceeds 10%
+- Calibration baseline persistence without repeated incremental calibration
+- LocalStorage persistence
+- Backup and restore, including calibration and active BBQ-session state
+- Installable PWA with standalone and offline operation
 
-## React Compiler
+## Technology Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite 8
+- Material UI
+- Recharts
+- LocalStorage
+- vite-plugin-pwa
 
-## Expanding the ESLint configuration
+## Development
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Install dependencies:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Start the development server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run dev
 ```
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+Run ESLint:
+
+```bash
+npm run lint
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## Architecture
+
+`AnalysisService` is the single source of truth for application calculations. The existing service/model architecture is intentionally kept simple:
+
+```text
+UI
+ ↓
+AnalysisService
+ ↓
+EquipmentService
+InstallationService
+MeasurementService
+BBQSessionService
+LearningService
+ ↓
+LocalStorage
+```
+
+## Adaptive Learning and Calibration
+
+The application compares measured cylinder-weight consumption with the theoretical consumption of the burners actually used in each BBQ session. This permits different burner combinations to be compared using a correction Factor rather than comparing their absolute kg/h values.
+
+The calibration cycle is:
+
+```text
+Current equipment baseline
+        ↓
+3 valid consecutive sessions
+        ↓
+Actual vs. session-specific theoretical consumption
+        ↓
+Deviation > 10%
+        ↓
+Calibration Recommendation
+        ↓
+User accepts Update
+        ↓
+New equipment baseline
+        ↓
+New learning cycle
+```
+
+Calibration is stored separately from the equipment baseline and is applied only once when the user accepts the recommendation.
+
+## PWA
+
+The production application is installable as a standalone PWA and uses a service worker generated by `vite-plugin-pwa`.
+
+The application stores user data locally in the browser. Backup/restore should be used when moving the application to another browser or device.
+
+## Explicitly Not Planned
+
+- Cylinder camera/OCR reading. The physical cylinder markings do not provide sufficient contrast/reliability for practical OCR, so manual weight entry remains the intended method.
+- Multiple BBQ units in parallel.
+- Cylinder serial-number and refill tracking.
+
+## Release Status
+
+The current project is a release candidate. Core application workflows, adaptive learning/calibration, PWA installation, standalone operation, and offline operation have been functionally tested.

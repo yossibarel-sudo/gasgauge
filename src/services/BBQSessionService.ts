@@ -2,8 +2,6 @@ import { STORAGE_KEYS } from "../constants/storageKeys";
 import type { BBQSession } from "../models/BBQSession";
 import { EquipmentService } from "./EquipmentService";
 
-const ACTIVE_KEY = "gasgauge-active-bbq-session";
-
 export class BBQSessionService {
 
   static load(): BBQSession[] {
@@ -88,7 +86,7 @@ export class BBQSessionService {
 
     const json =
       localStorage.getItem(
-        ACTIVE_KEY
+        STORAGE_KEYS.activeBBQSession
       );
 
     if (!json) {
@@ -138,7 +136,7 @@ export class BBQSessionService {
     };
 
     localStorage.setItem(
-      ACTIVE_KEY,
+      STORAGE_KEYS.activeBBQSession,
       JSON.stringify(session)
     );
 
@@ -162,7 +160,7 @@ export class BBQSessionService {
     };
 
     localStorage.setItem(
-      ACTIVE_KEY,
+      STORAGE_KEYS.activeBBQSession,
       JSON.stringify(updated)
     );
 
@@ -227,7 +225,7 @@ export class BBQSessionService {
     this.save(finished);
 
     localStorage.removeItem(
-      ACTIVE_KEY
+      STORAGE_KEYS.activeBBQSession
     );
 
     return finished;
@@ -256,7 +254,7 @@ export class BBQSessionService {
     );
 
     localStorage.removeItem(
-      ACTIVE_KEY
+      STORAGE_KEYS.activeBBQSession
     );
 
   }

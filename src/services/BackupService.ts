@@ -1,6 +1,21 @@
 import { STORAGE_KEYS } from "../constants/storageKeys";
 
 export interface GasGaugeBackup {
+  version: 2;
+  createdAt: string;
+  data: {
+    equipment: string | null;
+    installation: string | null;
+    measurements: string | null;
+    bbqSessions: string | null;
+    learning: string | null;
+    calibrationFactor: string | null;
+    calibrationDate: string | null;
+    activeBBQSession: string | null;
+  };
+}
+
+interface LegacyGasGaugeBackup {
   version: 1;
   createdAt: string;
   data: {
@@ -15,7 +30,7 @@ export interface GasGaugeBackup {
 export class BackupService {
   static createBackup(): GasGaugeBackup {
     return {
-      version: 1,
+      version: 2,
       createdAt: new Date().toISOString(),
       data: {
         equipment: localStorage.getItem(
@@ -32,6 +47,15 @@ export class BackupService {
         ),
         learning: localStorage.getItem(
           STORAGE_KEYS.learning
+        ),
+        calibrationFactor: localStorage.getItem(
+          STORAGE_KEYS.calibrationFactor
+        ),
+        calibrationDate: localStorage.getItem(
+          STORAGE_KEYS.calibrationDate
+        ),
+        activeBBQSession: localStorage.getItem(
+          STORAGE_KEYS.activeBBQSession
         ),
       },
     };
@@ -53,35 +77,29 @@ export class BackupService {
       }
     );
 
-    const url =
-      URL.createObjectURL(blob);
-
-    const link =
-      document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
 
     link.href = url;
-
     link.download =
       `gasgauge-backup-${new Date()
         .toISOString()
         .slice(0, 10)}.json`;
 
     document.body.appendChild(link);
-
     link.click();
-
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
   }
 
   static restoreBackup(
-    backup: GasGaugeBackup
+    backup: GasGaugeBackup | LegacyGasGaugeBackup
   ): void {
     if (
       !backup ||
-      backup.version !== 1 ||
-      !backup.data
+      !backup.data ||
+      (backup.version !== 1 && backup.version !== 2)
     ) {
       throw new Error(
         "Invalid GasGauge backup file."
@@ -112,13 +130,45 @@ export class BackupService {
       STORAGE_KEYS.learning,
       backup.data.learning
     );
+
+    if (backup.version === 2) {
+      this.setOrRemove(
+        STORAGE_KEYS.calibrationFactor,
+        backup.data.calibrationFactor
+      );
+
+      this.setOrRemove(
+        STORAGE_KEYS.calibrationDate,
+        backup.data.calibrationDate
+      );
+
+      this.setOrRemove(
+        STORAGE_KEYS.activeBBQSession,
+        backup.data.activeBBQSession
+      );
+    } else {
+      // Version 1 backups did not contain calibration/session state.
+      // Clear these keys so the restored application does not mix
+      // current state with the older backup snapshot.
+      localStorage.removeItem(
+        STORAGE_KEYS.calibrationFactor
+      );
+
+      localStorage.removeItem(
+        STORAGE_KEYS.calibrationDate
+      );
+
+      localStorage.removeItem(
+        STORAGE_KEYS.activeBBQSession
+      );
+    }
   }
 
   private static setOrRemove(
     key: string,
-    value: string | null
+    value: string | null | undefined
   ): void {
-    if (value === null) {
+    if (value === null || value === undefined) {
       localStorage.removeItem(key);
     } else {
       localStorage.setItem(

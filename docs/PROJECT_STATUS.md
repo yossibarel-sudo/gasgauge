@@ -1,6 +1,6 @@
 # GasGauge – Project Status
 
-Last Updated: August 24, 2026
+Last Updated: August 27, 2026
 
 ## 1. Project Overview
 
@@ -25,7 +25,7 @@ The application uses cylinder weight, equipment consumption and BBQ session hist
 
 ### Overall Status
 
-**Application is functional and close to release-ready.**
+**Application is functional, installable, and release-candidate ready.**
 
 The main application flow is working:
 
@@ -36,10 +36,20 @@ The main application flow is working:
 - BBQ sessions
 - Learning history
 - Statistics
-- Adaptive calibration recommendation
+- Adaptive calibration
 - PWA production build
+- PWA installation
+- Offline operation
 
-The application has been successfully built and previewed as a production PWA.
+The production PWA has been successfully:
+
+- Built
+- Previewed
+- Deployed to Netlify
+- Opened in a browser
+- Installed as a PWA
+- Launched as a standalone application
+- Tested for offline operation
 
 ---
 
@@ -62,6 +72,7 @@ Implemented:
 - Remaining BBQ sessions
 - Configured consumption
 - Measured consumption
+- Calibrated consumption used for prediction
 - Efficiency
 - Total BBQ hours
 - Calibration Recommendation card
@@ -88,6 +99,8 @@ Implemented:
 - Automatic conversion to kg/h
 - Equipment consumption persistence
 - Equipment calibration
+- Calibration factor persistence
+- Calibration date persistence
 
 ### Cylinder Installation
 
@@ -98,16 +111,18 @@ Implemented:
 - Empty cylinder weight
 - Initial gross weight
 
-The installation dialog now opens with:
+The installation dialog:
 
-- Current date
-- Empty input fields for capacity, empty cylinder weight and gross weight
+- Defaults date to current date
+- Starts capacity, empty-cylinder weight and gross weight empty
+- Accepts any two of the three weight parameters
+- Automatically calculates the third
+- Prevents saving inconsistent combinations
+- Creates a new installation ID
 
-Any two of the three weight parameters can be entered and the third is calculated automatically.
+A new cylinder installation creates a new installation record.
 
-Validation prevents saving inconsistent values.
-
-A new installation receives a new installation ID.
+GasGauge tracks cylinder installations rather than cylinder refills.
 
 ### Measurements
 
@@ -125,8 +140,21 @@ Implemented:
 - BBQ session recording
 - Session duration
 - Burner selection
-- Estimated gas consumption
+- Burner-dependent estimated gas consumption
 - Installation-specific session history
+- Active session persistence
+- Burner selection persistence during an active session
+
+The active BBQ session is timestamp-based.
+
+The session can continue through:
+
+- Component/page changes
+- Browser refresh
+- Screen locking
+- Switching applications
+
+The selected burners are persisted as part of the active session.
 
 ### Statistics
 
@@ -152,7 +180,7 @@ Redundant Average Hourly Consumption / Average Daily Consumption tiles were inte
 
 ### Learning
 
-Implemented:
+Implemented and verified:
 
 - Learning records
 - Actual consumption calculation
@@ -165,6 +193,8 @@ Implemented:
 - Prediction confidence
 - Standard deviation
 - Adaptive calibration recommendation
+- Calibration-cycle separation after calibration
+- Consecutive valid-session handling
 
 Learning records can be ignored for reasons such as:
 
@@ -174,29 +204,74 @@ Learning records can be ignored for reasons such as:
 - Invalid flow rate
 - Correction factor out of range
 
+The learning mechanism evaluates the correction Factor relative to the expected consumption for the burners selected during each session.
+
+This allows different burner combinations to be compared without treating their different absolute kg/h values as a fault.
+
+For example, a one-burner session and an all-burner session can have very different actual kg/h values while still producing comparable correction Factors.
+
+An ignored record breaks the current consecutive learning cycle.
+
+The learning mechanism no longer uses an arbitrary 2 kg/h upper limit to reject a learning record. Legitimate higher-consumption sessions, including multi-burner sessions, can therefore participate in learning when their correction Factor is valid.
+
 ### Calibration
 
-Implemented:
+Implemented and functionally verified:
 
-- Calibration recommendation after sufficient learning data
+- Calibration recommendation after 3 valid consecutive learning sessions with significant deviation
 - Calibration dialog
 - User can:
   - Keep Current
   - Update
-- Calibration update modifies equipment burner consumption
-- Calibration factor and calibration date are stored
+- Calibration update modifies the equipment burner baseline
+- Calibration factor is stored
+- Calibration date is stored
 - Calibration dialog closes after Update
-- Calibration is designed to avoid repeated incremental calibration when the same recommendation is already applied
+- Previous learning records remain visible in Learning History
+- Previous-cycle learning records do not affect the new cycle
+- Calibration is applied only once
+- Repeated refreshes do not repeatedly multiply burner consumption
+- New learning sessions are evaluated against the newly calibrated baseline
 
 The intended learning behavior is:
 
 1. Establish equipment consumption baseline.
 2. Collect valid BBQ sessions.
-3. Evaluate actual consumption against the current baseline.
-4. After 3 valid consecutive sessions showing significant deviation, recommend calibration.
-5. When calibration is accepted, establish a new baseline.
-6. Start a new learning cycle against the new baseline.
-7. If burners are subsequently replaced and consumption changes, the system should detect the new deviation and recommend recalibration after 3 valid sessions.
+3. Evaluate actual consumption against the current baseline for the selected burners.
+4. Require 3 valid consecutive sessions showing significant deviation.
+5. Recommend calibration when deviation exceeds 10%.
+6. When calibration is accepted, establish a new baseline.
+7. Start a new learning cycle against the new baseline.
+8. If burner consumption subsequently changes, the system can detect the new deviation and recommend recalibration after 3 valid consecutive sessions.
+
+### Calibration Verification
+
+The complete calibration cycle has been tested successfully.
+
+Verified behavior included:
+
+- Mixed burner combinations
+- Different absolute consumption rates
+- Factor-based comparison
+- Three valid consecutive learning sessions
+- Calibration factor above the 10% threshold
+- Calibration recommendation
+- Calibration Update
+- Equipment baseline updated once
+- Browser refresh after calibration
+- Stable calibrated baseline
+- No repeated multiplication
+- Previous learning records retained
+- New learning cycle established after calibration
+
+A representative verified calibration test produced approximately:
+
+- Calibration factor: 1.151
+- Deviation: 15.1%
+- Three valid learning records
+- Calibration recommendation displayed
+
+After accepting Update, the calibrated consumption remained stable after refresh and did not undergo further multiplication.
 
 ---
 
@@ -228,7 +303,17 @@ Current storage areas include:
 - Learning records
 - Calibration information
 
-A central `src/constants/storageKeys.ts` file exists.
+A central:
+
+```text file exists.
+src/constants/storageKeys.ts
+
+Active BBQ session information, including selected burners, is persisted so the session can continue across:
+
+Page changes
+Browser refresh
+Screen locking
+Application switching
 
 ---
 
@@ -236,89 +321,118 @@ A central `src/constants/storageKeys.ts` file exists.
 
 PWA support is installed using:
 
-- `vite-plugin-pwa@1.3.0`
+vite-plugin-pwa@1.3.0
 
 Production build successfully generates:
 
-- `manifest.webmanifest`
-- `registerSW.js`
-- `sw.js`
-- Workbox file
-- PWA icon
+manifest.webmanifest
+registerSW.js
+sw.js
+Workbox precache file
+PWA icons
 
-Production preview was tested and works as expected.
+PWA configuration includes:
+
+Standalone display mode
+/ scope
+/ start URL
+Explicit PWA application ID
+192×192 PNG icon
+512×512 PNG icon
+Automatic service-worker registration/update
+PWA Verification
+
+Verified:
+
+Production build
+Production preview
+Netlify deployment
+Browser loading
+Browser installation
+Standalone application launch
+Application navigation after installation
+LocalStorage persistence
+Offline application loading
+
+The application is therefore considered installable and operational as a PWA.
 
 The Vite build currently reports a non-blocking warning that the main JavaScript chunk is larger than 500 kB.
 
 This is not currently blocking release.
 
----
-
-## 7. Current Known Issue
-
-The latest learning/calibration changes introduced a TypeScript requirement for:
-
-```ts
-calibrationFactorAtTime in LearningRecord.
-
-The current Learning.ts model already contains this required property.
-
-LearningService.ts currently needs all six LearningRecord creation points to populate: calibrationFactorAtTime
-
-using the current applied calibration factor.
-
-AnalysisService.ts also has an unused EquipmentService import that should be removed.
-
-These are the immediate outstanding TypeScript issues.
+Bundle-size optimization can be considered later if actual performance testing indicates a need.
 
 ---
 
-## 8. Latest Learning/Calibration Change
+## 7. TypeScript / Build Status
 
-The learning mechanism is being changed so calibration creates a new learning baseline.
+The previous calibrationFactorAtTime TypeScript issues have been resolved.
 
-EquipmentService now stores:
+All LearningRecord creation points now populate:
+
+calibrationFactorAtTime
+
+using the calibration factor applicable when the learning record was created.
+
+The unused EquipmentService import in:
+
+src/services/AnalysisService.ts
+
+has been removed.
+
+The current production build:
+
+npm run build
+
+passes successfully with no TypeScript errors.
+
+---
+
+## 8. Latest Learning/Calibration Changes
+
+The learning mechanism now treats calibration as the creation of a new learning baseline.
+
+EquipmentService stores:
 
 Applied calibration factor
 Calibration date
 
-LearningService.statistics() was updated to consider learning records after the most recent calibration as the active learning cycle.
+LearningService.statistics() considers only records belonging to the current calibration cycle.
 
-The purpose is to prevent old learning data from repeatedly affecting the newly calibrated equipment.
+Ignored records break the current consecutive valid-session sequence.
 
-The calibration mechanism must support:
+AnalysisService uses the learning statistics as the source for:
 
-Initial calibration
-Three-session validation after calibration
-Detection of changed burner consumption
-New calibration recommendation after three valid sessions
-No endless multiplication of burner consumption
+Effective consumption
+Calibration deviation
+Calibration recommendation
+Recommended consumption
+
+This prevents old learning data from affecting the newly calibrated equipment.
+
+The calibration mechanism has been functionally verified with:
+
+Mixed burner selections
+Different consumption rates
+Three-session calibration cycle
+Calibration update
+Refresh/reload after calibration
 
 ---
 
 ## 9. Current Immediate Task
 
-Complete and verify the learning/calibration cycle.
+The core adaptive Learning/Calibration task is:
 
-Immediate steps
-Fix calibrationFactorAtTime TypeScript errors in LearningService.ts.
-Remove the unused EquipmentService import from AnalysisService.ts.
-Run:
-npm run build
+COMPLETE AND VERIFIED
 
-Verify there are no TypeScript errors.
-Test the calibration workflow in the application.
-Verify that after calibration:
-old learning records do not affect the new baseline
-the next valid sessions are evaluated against the new baseline
-three consecutive valid sessions can trigger a new recommendation
-accepting calibration does not endlessly multiply consumption
+No calibration-related code changes are currently required.
+
+The project should now move from feature development into final release validation and cleanup.
 
 ---
 
-### 10. Next Recommended Steps
-
-After the learning mechanism is verified:
+## 10. Next Recommended Steps
 
 Sprint 5 – Finalization / Release Preparation
 
@@ -326,29 +440,89 @@ Focus on practical improvements rather than adding unnecessary features.
 
 Recommended priorities:
 
-Complete and verify adaptive learning/calibration.
 Verify all main user workflows end-to-end.
 Verify LocalStorage persistence and installation transitions.
-Test PWA installation and offline behavior.
-Improve user-facing validation/error messages where needed.
+Perform final PWA installation and offline regression testing.
+Review user-facing validation and error messages where needed.
 Perform final UI consistency and usability cleanup.
-Review production build warning only if performance becomes an issue.
-Prepare a release-ready version.
-Explicitly Not Planned
+Review the production bundle-size warning only if performance becomes an issue.
+Verify that the current Netlify production deployment matches the tested release candidate.
+Create a final release commit.
+Optionally create a Git release tag.
+Release Regression Scenarios
+
+Before final release, verify:
+
+New cylinder installation
+Initial weight entry
+Additional weight measurement
+BBQ session with one burner
+BBQ session with multiple burners
+Mixed burner combinations
+Learning History
+Three-session calibration recommendation
+Calibration Update
+New learning cycle after calibration
+Application refresh
+Application relaunch
+Installed PWA launch
+Offline launch
+LocalStorage data persistence
+
+---
+
+## 11. Explicitly Not Planned
+
+Cylinder Camera/OCR
 
 Cylinder reading using the phone camera is not planned.
 
 The physical cylinder markings do not provide sufficient contrast/reliability for practical OCR, so manual weight entry remains the intended method.
 
+Multiple BBQs
+
+No support for managing multiple BBQ units in parallel is planned.
+
+Cylinder Serial Number / Refill Tracking
+
+GasGauge tracks cylinder installations, not refills.
+
+The following are intentionally not planned:
+
+Cylinder serial number
+Last refill date
+
+A new cylinder installation creates a new installation record.
+
 ---
 
-## 11. Development Principles
+## 12. Development Principles
 
 Keep implementation practical and focused.
+
 Prefer coding over prolonged planning.
+
 Avoid unnecessary redesigns.
+
 Do not repeat already completed work.
+
 Preserve working functionality.
+
 Make small, testable changes.
-Run npm run build after significant changes.
+
+Run:
+
+npm run build
+
+after significant changes.
+
 Keep AnalysisService as the single source of truth for calculations.
+
+For small corrections:
+
+Modify only the relevant file/section.
+Provide exact file paths.
+Provide copy-paste-ready repair snippets.
+Do not regenerate the entire project package unless the change is large enough to justify it.
+
+Development should remain focused on getting GasGauge to a stable release rather than adding unnecessary features.

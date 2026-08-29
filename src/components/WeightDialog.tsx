@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Divider,
@@ -55,11 +55,7 @@ export default function WeightDialog({
 const invalidWeight =
   weight >= previousWeight;
 
-  useEffect(() => {
 
-    setWeight(currentWeight);
-
-  }, [currentWeight]);
 
   return (
 

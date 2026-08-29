@@ -36,12 +36,6 @@ export interface BBQSession {
    */
   estimatedGasUsedKg: number;
 
-    /**
-   * Actual LPG consumed from the cylinder weight
-   * after the BBQ session.
-   */
-  actualGasUsedKg?: number;
-
   /**
    * Optional notes.
    */

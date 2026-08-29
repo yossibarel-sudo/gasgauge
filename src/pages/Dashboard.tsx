@@ -154,8 +154,6 @@ const learning =
   function saveInstallation(
   newInstallation: Installation
 ) {
-  console.log("Saving installation:", newInstallation);
-
   InstallationService.save(
     newInstallation
   );
@@ -191,10 +189,6 @@ const learning =
     measurementType: "INSTALLATION",
 
   });
-
-  console.log(
-  MeasurementService.load()
-);
 
   setInstallation(
     newInstallation
@@ -438,7 +432,6 @@ if (
 
       <BBQSessionControl
   installationId={installation.id}
-  analysis={analysis}
   onSessionFinished={(session) => {
 
   setLastSession(session);
@@ -799,6 +792,7 @@ if (
 
 
       <InstallationDialog
+        key={installationDialogOpen ? "installation-open" : "installation-closed"}
         open={installationDialogOpen}
         installation={installation}
         onCancel={() =>
@@ -809,6 +803,7 @@ if (
 
 
       <WeightDialog
+  key={weightDialogOpen ? "weight-open" : "weight-closed"}
   open={weightDialogOpen}
   previousWeight={
   MeasurementService

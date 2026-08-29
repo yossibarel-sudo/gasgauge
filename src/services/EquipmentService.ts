@@ -1,13 +1,11 @@
 import type { Equipment } from "../models/Equipment";
 import { defaultEquipment } from "./defaultEquipment";
 
-const STORAGE_KEY = "gasgauge-equipment";
-const CALIBRATION_KEY = "gasgauge-calibration-factor";
-const CALIBRATION_DATE_KEY = "gasgauge-calibration-date";
+import { STORAGE_KEYS } from "../constants/storageKeys";
 
 export class EquipmentService {
   static load(): Equipment {
-    const json = localStorage.getItem(STORAGE_KEY);
+    const json = localStorage.getItem(STORAGE_KEYS.equipment);
 
     if (!json) {
       return defaultEquipment;
@@ -18,7 +16,7 @@ export class EquipmentService {
 
   static save(equipment: Equipment): void {
     localStorage.setItem(
-      STORAGE_KEY,
+      STORAGE_KEYS.equipment,
       JSON.stringify(equipment)
     );
   }
@@ -45,12 +43,12 @@ export class EquipmentService {
     this.save(calibratedEquipment);
 
     localStorage.setItem(
-      CALIBRATION_KEY,
+      STORAGE_KEYS.calibrationFactor,
       String(calibrationFactor)
     );
 
     localStorage.setItem(
-      CALIBRATION_DATE_KEY,
+      STORAGE_KEYS.calibrationDate,
       new Date().toISOString()
     );
 
@@ -61,7 +59,7 @@ export class EquipmentService {
     number | null {
     const value =
       localStorage.getItem(
-        CALIBRATION_KEY
+        STORAGE_KEYS.calibrationFactor
       );
 
     if (value === null) {
@@ -79,7 +77,7 @@ export class EquipmentService {
     Date | null {
     const value =
       localStorage.getItem(
-        CALIBRATION_DATE_KEY
+        STORAGE_KEYS.calibrationDate
       );
 
     if (value === null) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Dialog,
@@ -36,23 +36,6 @@ export default function InstallationDialog({
   const [capacity, setCapacity] = useState("");
   const [emptyWeight, setEmptyWeight] = useState("");
   const [initialGross, setInitialGross] = useState("");
-
-    useEffect(() => {
-    if (open) {
-      setEditedInstallation({
-        ...installation,
-        installDate: new Date(),
-        cylinderCapacityKg: 0,
-        emptyCylinderWeightKg: 0,
-        initialGrossWeightKg: 0,
-        currentGrossWeightKg: 0,
-      });
-
-      setCapacity("");
-      setEmptyWeight("");
-      setInitialGross("");
-    }
-  }, [open, installation]);
 
   const updateWeights = (
     changedField: "capacity" | "empty" | "gross",

@@ -13,11 +13,9 @@ import { BBQSessionService } from "../services/BBQSessionService";
 import { EquipmentService } from "../services/EquipmentService";
 
 import type { BBQSession } from "../models/BBQSession";
-import type { AnalysisResult } from "../services/AnalysisService";
 
 interface Props {
   installationId: string;
-  analysis: AnalysisResult;
  onSessionFinished: (
   session: BBQSession
 ) => void;
@@ -26,7 +24,6 @@ interface Props {
 
 export default function BBQSessionControl({
   installationId,
-  analysis: _analysis,
   onSessionFinished,
 }: Props) {
 
@@ -40,8 +37,8 @@ export default function BBQSessionControl({
       BBQSessionService.getActiveSession()?.burnerIds ?? []
     );
 
-  const [, forceRefresh] =
-    useState(0);
+  const [currentTime, setCurrentTime] =
+    useState(() => Date.now());
 
   const equipment =
     EquipmentService.load();
@@ -55,9 +52,7 @@ export default function BBQSessionControl({
     const timer =
       setInterval(() => {
 
-        forceRefresh(
-          value => value + 1
-        );
+        setCurrentTime(Date.now());
 
       }, 1000);
 
@@ -73,7 +68,7 @@ export default function BBQSessionControl({
     }
 
     return (
-      Date.now() -
+      currentTime -
       activeSession.startTime.getTime()
     ) / (1000 * 60 * 60);
 

@@ -358,7 +358,7 @@ export default function BBQSessionsPage({
 
 
       <BBQSessionDialog
-
+        key={dialogOpen ? "bbq-open" : "bbq-closed"}
         open={dialogOpen}
 
         installationId={

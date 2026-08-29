@@ -1,11 +1,10 @@
 import type { Installation } from "../models/Installation";
 import { defaultInstallation } from "./defaultInstallation";
-
-const STORAGE_KEY = "gasgauge-installation";
+import { STORAGE_KEYS } from "../constants/storageKeys";
 
 export class InstallationService {
   static load(): Installation {
-    const json = localStorage.getItem(STORAGE_KEY);
+    const json = localStorage.getItem(STORAGE_KEYS.installation);
 
     if (!json) {
       this.save(defaultInstallation);
@@ -22,7 +21,7 @@ export class InstallationService {
 
   static save(installation: Installation): void {
     localStorage.setItem(
-      STORAGE_KEY,
+      STORAGE_KEYS.installation,
       JSON.stringify(installation)
     );
   }
