@@ -6,6 +6,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  LabelList,
 } from "recharts";
 
 import type { Measurement } from "../models/Measurement";
@@ -59,13 +60,20 @@ export default function WeightHistoryChart({
 
         <YAxis/>
 
-        <Tooltip/>
+        <Tooltip
+          formatter={(value) => [
+            `${Number(value).toFixed(2)} kg`,
+            "Cylinder Weight",
+          ]}
+        />
 
         <Line
           dataKey="weight"
           name="Cylinder Weight"
           stroke="#1976d2"
-        />
+        >
+          <LabelList dataKey="weight" position="top" />
+        </Line>
 
       </LineChart>
 

@@ -9,6 +9,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableContainer,
   Typography,
 } from "@mui/material";
 
@@ -170,7 +171,8 @@ function saveManualWeight(weight: number) {
               No measurements have been recorded yet.
             </Typography>
           ) : (
-            <Table>
+            <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+            <Table sx={{ minWidth: 680 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Type</TableCell>
@@ -198,8 +200,10 @@ function saveManualWeight(weight: number) {
 
   {measurement.measurementType === "INSTALLATION"
     ? "🟢 New Cylinder"
-    : measurement.measurementType === "BBQ"
+    : measurement.measurementType === "BBQ_AUTOMATIC"
     ? "🔥 BBQ"
+    : measurement.measurementType === "BBQ_MANUAL"
+    ? "✍️ Manual BBQ"
     : "⚪ Manual"}
 
 </TableCell>
@@ -244,6 +248,7 @@ function saveManualWeight(weight: number) {
                 )}
               </TableBody>
             </Table>
+            </TableContainer>
           )}
 
           <Box
@@ -264,6 +269,7 @@ function saveManualWeight(weight: number) {
       </Card>
 
       <WeightDialog
+  key={weightDialogOpen ? "weight-open" : "weight-closed"}
   open={weightDialogOpen}
   previousWeight={
     InstallationService.load().currentGrossWeightKg

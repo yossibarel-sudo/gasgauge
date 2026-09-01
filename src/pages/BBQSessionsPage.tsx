@@ -17,11 +17,17 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import BBQSessionDialog from "../components/BBQSessionDialog";
+import WeightDialog from "../components/WeightDialog";
 
 import { BBQSessionService } from "../services/BBQSessionService";
 import { InstallationService } from "../services/InstallationService";
+import { MeasurementService } from "../services/MeasurementService";
+import { AnalysisService } from "../services/AnalysisService";
+import { EquipmentService } from "../services/EquipmentService";
+import { LearningService } from "../services/LearningService";
 
 import type { BBQSession } from "../models/BBQSession";
+import type { Measurement } from "../models/Measurement";
 
 
 
@@ -87,28 +93,83 @@ export default function BBQSessionsPage({
   ] =
     useState(false);
 
+  const [pendingSession, setPendingSession] =
+    useState<BBQSession | null>(null);
+
+  const [weightDialogOpen, setWeightDialogOpen] =
+    useState(false);
+
 
 
 
   function saveSession(
     session: BBQSession
   ) {
+    setDialogOpen(false);
+    setPendingSession(session);
+    setWeightDialogOpen(true);
+  }
 
-    BBQSessionService.save(
-      session
-    );
+  function saveSessionWeight(weight: number) {
+    if (!pendingSession) {
+      return;
+    }
 
+    const currentInstallation = InstallationService.load();
+    
+    const updatedInstallation = {
+      ...currentInstallation,
+      currentGrossWeightKg: weight,
+    };
+
+    const completedSession: BBQSession = {
+      ...pendingSession,
+       };
+
+    BBQSessionService.save(completedSession);
 
     setSessions(
-      BBQSessionService
-        .loadForInstallation(
-          installation.id
-        )
+      BBQSessionService.loadForInstallation(
+        currentInstallation.id
+      )
     );
 
+    InstallationService.save(updatedInstallation);
 
-    setDialogOpen(false);
+    const analysis = AnalysisService.analyze(
+      updatedInstallation,
+      EquipmentService.load(),
+      MeasurementService.load()
+    );
 
+    const measurement: Measurement = {
+      id: crypto.randomUUID(),
+      installationId: currentInstallation.id,
+      date: new Date(),
+      grossWeightKg: weight,
+      remainingLpgKg: analysis.remainingLpgKg,
+      remainingPercent: analysis.remainingPercent,
+      bbqRelated: true,
+      measurementType: "BBQ_MANUAL",
+      notes: "Manual BBQ session measurement",
+    };
+
+    const previousMeasurement = MeasurementService.latestBefore(
+      currentInstallation.id,
+      measurement.date
+    );
+
+    MeasurementService.save(measurement);
+
+    if (previousMeasurement) {
+      LearningService.learnFromMeasurements(
+        previousMeasurement,
+        measurement
+      );
+    }
+
+    setPendingSession(null);
+    setWeightDialogOpen(false);
   }
 
 
@@ -373,6 +434,30 @@ export default function BBQSessionsPage({
           saveSession
         }
 
+      />
+
+      <WeightDialog
+        key={pendingSession?.id ?? "weight-closed"}
+        open={weightDialogOpen}
+        previousWeight={installation.currentGrossWeightKg}
+        currentWeight={installation.currentGrossWeightKg}
+        sessionDate={pendingSession?.date}
+        sessionDurationHours={pendingSession?.durationHours}
+        burners={
+          pendingSession?.burnerIds
+            .map((id) =>
+              EquipmentService.load().burners.find(
+                (burner) => burner.id === id
+              )?.name ?? `#${id}`
+            )
+            .join(", ")
+        }
+        estimatedGasKg={pendingSession?.estimatedGasUsedKg}
+        onCancel={() => {
+          setWeightDialogOpen(false);
+          setPendingSession(null);
+        }}
+        onSave={saveSessionWeight}
       />
 
 

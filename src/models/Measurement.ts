@@ -19,7 +19,8 @@ export interface Measurement {
 
   measurementType:
   | "INSTALLATION"
-  | "BBQ"
+  | "BBQ_AUTOMATIC"
+  | "BBQ_MANUAL"
   | "MANUAL";
 
   notes?: string;

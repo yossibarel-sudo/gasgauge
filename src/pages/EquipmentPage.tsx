@@ -258,7 +258,7 @@ export default function EquipmentPage({
             type="number"
             label="Default Session Duration (minutes)"
             value={
-              equipment.defaultSessionDurationMinutes
+              equipment.defaultSessionDurationMinutes || ""
             }
             onChange={(e)=>
               updateEquipment(
@@ -362,7 +362,7 @@ export default function EquipmentPage({
                       type="number"
                       label="Value"
                       value={
-                        burner.value
+                        burner.value || ""
                       }
                       onChange={(e)=>
                         updateBurner(

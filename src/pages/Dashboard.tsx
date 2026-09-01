@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -123,6 +123,45 @@ const burnerNames =
 const learning =
   LearningService.statistics();
 
+const pendingCalibrationFactor =
+  EquipmentService.getCalibrationRecommendation();
+
+const handledCalibrationCount =
+  EquipmentService.getHandledCalibrationRecommendationCount();
+
+const hasNewCalibrationRecommendation =
+  analysis.calibrationRecommended &&
+  learning.completedCylinders > handledCalibrationCount;
+
+useEffect(() => {
+  if (hasNewCalibrationRecommendation) {
+    EquipmentService.setCalibrationRecommendation(
+      analysis.calibrationFactor
+    );
+  }
+}, [
+  hasNewCalibrationRecommendation,
+  analysis.calibrationFactor,
+]);
+
+const calibrationFactorForRecommendation =
+  pendingCalibrationFactor ??
+  (hasNewCalibrationRecommendation
+    ? analysis.calibrationFactor
+    : null);
+
+const calibrationRecommendationVisible =
+  calibrationFactorForRecommendation !== null;
+
+const calibrationDeviationForDisplay =
+  (calibrationFactorForRecommendation ?? 1) * 100 - 100;
+
+const recommendedKgPerHourForDisplay =
+  calibrationRecommendationVisible
+    ? analysis.theoreticalKgPerHour *
+      (calibrationFactorForRecommendation ?? 1)
+    : null;
+
   const [
     installationDialogOpen,
     setInstallationDialogOpen,
@@ -157,6 +196,8 @@ const learning =
   InstallationService.save(
     newInstallation
   );
+
+  EquipmentService.clearCalibrationRecommendation();
 
   const installationAnalysis =
     AnalysisService.analyze(
@@ -296,7 +337,7 @@ function restoreBackup(
   bbqRelated:
     lastSession !== null,
 
-  measurementType: "BBQ",
+  measurementType: "BBQ_AUTOMATIC",
 
 };
 
@@ -402,7 +443,12 @@ if (
         <Typography
           sx={{
             fontSize:"64px",
-            color:"#4CAF50",
+            color:
+              analysis.status === "GOOD"
+                ? "#4CAF50"
+                : analysis.status === "LOW"
+                ? "#FFA726"
+                : "#F44336",
             fontWeight:"bold",
           }}
         >
@@ -645,7 +691,7 @@ if (
       </Paper>
 
 
-    {analysis.calibrationRecommended && (
+    {calibrationRecommendationVisible && (
   <Card sx={{ mb: 3 }}>
     <CardContent>
       <Typography
@@ -659,7 +705,7 @@ if (
         Measured consumption differs from the
         configured consumption by{" "}
         {Math.abs(
-          analysis.calibrationDeviationPercent
+          calibrationDeviationForDisplay
         ).toFixed(1)}
         %.
       </Typography>
@@ -667,8 +713,8 @@ if (
       <Typography sx={{ mb: 2 }}>
         Recommended consumption:{" "}
         <strong>
-          {analysis.recommendedKgPerHour !== null
-            ? `${analysis.recommendedKgPerHour.toFixed(
+          {recommendedKgPerHourForDisplay !== null
+            ? `${recommendedKgPerHourForDisplay.toFixed(
                 3
               )} kg/h`
             : "--"}
@@ -701,7 +747,18 @@ if (
           variant="outlined"
           onClick={onEquipment}
         >
-          Equipment
+          <Box
+            component="span"
+            sx={{ display: { xs: "none", sm: "inline" } }}
+          >
+            Equipment
+          </Box>
+          <Box
+            component="span"
+            sx={{ display: { xs: "inline", sm: "none" } }}
+          >
+            Equip.
+          </Box>
         </Button>
 
 
@@ -848,7 +905,7 @@ if (
       The measured gas consumption differs from
       the configured consumption by{" "}
       {Math.abs(
-        analysis.calibrationDeviationPercent
+        calibrationDeviationForDisplay
       ).toFixed(1)}
       %.
     </Typography>
@@ -858,8 +915,8 @@ if (
     </Typography>
 
     <Typography variant="h6">
-      {analysis.recommendedKgPerHour !== null
-        ? `${analysis.recommendedKgPerHour.toFixed(
+      {recommendedKgPerHourForDisplay !== null
+        ? `${recommendedKgPerHourForDisplay.toFixed(
             3
           )} kg/h`
         : "--"}
@@ -868,9 +925,12 @@ if (
 
   <DialogActions>
     <Button
-      onClick={() =>
-        setCalibrationDialogOpen(false)
-      }
+      onClick={() => {
+        EquipmentService.handleCalibrationRecommendation(
+          learning.completedCylinders
+        );
+        setCalibrationDialogOpen(false);
+      }}
     >
       Keep Current
     </Button>

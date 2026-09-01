@@ -4,7 +4,11 @@ export const STORAGE_KEYS = {
   measurements: "gasgauge-measurements",
   bbqSessions: "gasgauge-bbq-sessions",
   learning: "gasgauge_learning",
+  
   calibrationFactor: "gasgauge-calibration-factor",
   calibrationDate: "gasgauge-calibration-date",
   activeBBQSession: "gasgauge-active-bbq-session",
+  
+  calibrationRecommendation: "gasgauge-calibration-recommendation",
+  calibrationRecommendationHandledCount: "gasgauge-calibration-recommendation-handled-count",
 } as const;

@@ -53,7 +53,10 @@ export default function WeightDialog({
   previousWeight - weight;
 
 const invalidWeight =
-  weight >= previousWeight;
+  weight > 0 && weight >= previousWeight;
+
+const invalidInput =
+  !Number.isFinite(weight) || weight <= 0;
 
 
 
@@ -121,7 +124,7 @@ const invalidWeight =
   margin="normal"
   label="Current Weight (kg)"
   type="number"
-  value={weight}
+  value={weight || ""}
   slotProps={{
     htmlInput: {
       step: 0.01,
@@ -163,9 +166,10 @@ const invalidWeight =
 
         <Button
           variant="contained"
+          disabled={invalidInput || invalidWeight}
           onClick={() => {
 
-  if (invalidWeight) {
+  if (invalidInput || invalidWeight) {
     return;
   }
 

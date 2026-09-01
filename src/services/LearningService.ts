@@ -168,21 +168,6 @@ export class LearningService {
     cookingHours <= 0 ||
     theoreticalGas <= 0
   ) {
-    this.add({
-      id: crypto.randomUUID(),
-      startMeasurementId: previous.id,
-      endMeasurementId: current.id,
-      createdAt: new Date(),
-      calibrationFactorAtTime,
-      gasConsumedKg: 0,
-      cookingHours,
-      theoreticalKgPerHour: 0,
-      actualKgPerHour: 0,
-      correctionFactor: 1,
-      ignored: true,
-      ignoredReason: "Invalid theoretical consumption",
-    });
-
     return;
   }
 
@@ -191,8 +176,7 @@ export class LearningService {
     current.grossWeightKg;
 
     if (
-  gasConsumedKg <= 0 ||
-  gasConsumedKg > 3
+  gasConsumedKg <= 0
 ) {
 
   this.add({

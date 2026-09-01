@@ -9,6 +9,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableContainer,
   Typography,
 } from "@mui/material";
 
@@ -65,7 +66,8 @@ export default function LearningPage({
 
         <CardContent>
 
-          <Table>
+          <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table sx={{ minWidth: 760 }}>
 
             <TableHead>
 
@@ -174,6 +176,7 @@ export default function LearningPage({
             </TableBody>
 
           </Table>
+          </TableContainer>
 
           <Box
             sx={{

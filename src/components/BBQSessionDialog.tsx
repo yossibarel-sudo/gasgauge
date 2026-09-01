@@ -152,10 +152,13 @@ export default function BBQSessionDialog({
               min: 0.01,
             },
           }}
-          value={editedSession.durationHours}
+          value={editedSession.durationHours || ""}
           onChange={(e) =>
             updateSession({
-              durationHours: Number(e.target.value),
+              durationHours:
+                e.target.value === ""
+                  ? 0
+                  : Number(e.target.value),
             })
           }
         />

@@ -19,6 +19,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 
 import { AnalysisService } from "../services/AnalysisService";
@@ -243,14 +244,21 @@ export default function StatisticsPage({
 
                   <YAxis />
 
-                  <Tooltip />
+                  <Tooltip
+                    formatter={(value) => [
+                      `${Number(value).toFixed(3)} kg`,
+                      "Gas",
+                    ]}
+                  />
 
                   <Line
                     type="monotone"
                     dataKey="gasKg"
                     name="Gas (kg)"
                     strokeWidth={2}
-                  />
+                  >
+                    <LabelList dataKey="gasKg" position="top" />
+                  </Line>
                 </LineChart>
               </ResponsiveContainer>
             </Box>
